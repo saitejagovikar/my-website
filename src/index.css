@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Bilbo+Swash+Caps&family=Marcellus+SC&display=swap');
+@import "tailwindcss";
+
+/* Font classes */
+.font-bilbo {
+  font-family: 'Bilbo Swash Caps', cursive;
+}
+
+.font-marcellus {
+  font-family: 'Marcellus SC', serif;
+}
+
+/* Custom marquee animation */
+@keyframes marquee {
+  0% { 
+    transform: translateX(0%); 
+  }
+  100% { 
+    transform: translateX(-16.66%); 
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
