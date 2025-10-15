@@ -3,6 +3,7 @@ import AddToCartButton from "./AddToCartButton";
 import { useNavigate } from 'react-router-dom';
 import { products, customizableProducts } from '../data/products';
 import PhotoBanner from './PhotoBanner';
+import ElectricBorder from './ElectricBorder';
 
 function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
   const navigate = useNavigate();
@@ -151,10 +152,101 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
                 <span className="mt-2 w-16 h-1 bg-black rounded-full"></span>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {customizableProducts.map((product) => (
-                <ProductCard key={product.id} product={product} customizable />
-              ))}
+            <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+              <ElectricBorder 
+                color="white"
+                speed={0.5}
+                chaos={0.5}
+                thickness={2}
+                glowIntensity={0.8}
+                style={{ 
+                  borderRadius: '1.25rem',
+                  background: 'linear-gradient(135deg, rgba(190, 201, 205, 0.9) 0%, rgb(145, 207, 224) 100%)',
+                  boxShadow: '0 10px 30px -10px rgba(175, 141, 231, 0.2)'
+                }}
+                className="w-full py-6 sm:py-8 md:py-10"
+              >
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col md:flex-row items-center gap-6">
+                    {/* Image Side - More compact on mobile */}
+                    <div className="w-full md:w-5/12 lg:w-2/5">
+                      <div className="relative w-full aspect-square sm:aspect-[3/4] bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border-2 border-white/30">
+                        <img
+                          src={customizableProducts[0].image}
+                          alt={customizableProducts[0].name}
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                        <div className="absolute top-3 right-3">
+                          <span className="inline-flex items-center px-3 py-1 text-xs sm:text-sm font-medium rounded-full bg-white/95 text-purple-600 shadow-md backdrop-blur-sm border border-white/20">
+                            <span className="relative flex h-2 w-2 mr-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+                            </span>
+                            CUSTOMIZE
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Text Side - Stacked on mobile */}
+                    <div className="w-full md:w-7/12 lg:w-3/5 space-y-3 sm:space-y-4 text-center md:text-left">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight" style={{ fontFamily: 'Marcellus SC, serif' }}>
+                        {customizableProducts[0].name}
+                      </h2>
+                      
+                      <p className="text-sm sm:text-base text-gray-700">
+                        Create your own unique t-shirt with our easy-to-use customization tool.
+                        Choose from various colors, add text, or upload your own design!
+                      </p>
+                      
+                      <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
+                        <span className="text-2xl sm:text-3xl font-light text-gray-900">
+                          ₹{customizableProducts[0].price}
+                        </span>
+                        {customizableProducts[0].originalPrice && (
+                          <span className="text-sm sm:text-base text-gray-500 line-through">
+                            ₹{customizableProducts[0].originalPrice}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="pt-2">
+                        <button
+                          onClick={() => navigate(`/customize/${customizableProducts[0].id}`)}
+                          className="w-full sm:w-auto relative overflow-hidden px-6 py-3 sm:px-8 sm:py-3.5 text-sm sm:text-base font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 group"
+                        >
+                          <span className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                          <span className="relative flex items-center justify-center">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            START CUSTOMIZING
+                          </span>
+                        </button>
+                      </div>
+                      
+                      <div className="pt-3">
+                        <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-700">
+                          {[
+                            'Premium quality fabric that lasts',
+                            'Easy-to-use design tool',
+                            'Fast shipping and easy returns'
+                          ].map((item, index) => (
+                            <li key={index} className="flex items-start">
+                              <div className="flex-shrink-0 w-5 h-5 mt-0.5 mr-2 flex items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                              </div>
+                              <span className="text-left">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ElectricBorder>
             </div>
           </div>
         </div>
