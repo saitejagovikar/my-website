@@ -12,9 +12,11 @@ import ProductDetail from './pages/ProductDetail.jsx';
 import Customize from './pages/Customize.jsx';
 import { allProducts } from './data/products.js';
 
+
 import LoginPage from './pages/Login.jsx';
 import ProfilePage from './pages/Profile.jsx';
 import Checkout from './pages/Checkout.jsx';
+import AnnouncementBanner from './components/AnnouncementBanner';
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -142,11 +144,20 @@ export default function App() {
   // Layout component to wrap pages with Navbar and Footer
   const Layout = ({ children }) => (
     <div className="min-h-screen flex flex-col">
-      <Navbar user={user} cartCount={cartItemCount} />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
+      <div className="relative z-50">
+        {/* Announcement banner - static (scrolls away) */}
+        <AnnouncementBanner />
+        {/* Navbar - fixed to top */}
+        <Navbar user={user} cartCount={cartItemCount} onLogout={handleLogout} />
+      </div>
+
+      {/* Main content - no top padding as navbar is positioned absolutely over content */}
+      <div className="relative z-10">
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 
@@ -231,7 +242,50 @@ export default function App() {
 function ProductDetailWrapper({ products, onAddToCart, user }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = products.find(p => p.id === Number(id));
+  
+  // Include Limited Edition products
+  const limitedEditionProducts = [
+    {
+      id: 'dragon-tee',
+      name: 'Dragon Design Tee',
+      image: '/images/dragon.png',
+      alt: 'Dragon Limited Edition',
+      description: 'Exclusive dragon design t-shirt, limited edition',
+      price: 999,
+      sizes: ['S', 'M', 'L', 'XL'],
+      colors: ['Black', 'White'],
+      details: 'Handcrafted dragon design on premium cotton fabric. Limited edition collectible.',
+      category: 'limited-edition',
+      inStock: true,
+      rating: 4.8,
+      reviews: 124,
+      material: '100% Cotton',
+      care: 'Machine wash cold, tumble dry low'
+    },
+    {
+      id: 'anime-tee',
+      name: 'Anime Art Tee',
+      image: '/images/anime.png',
+      alt: 'Anime Limited Edition',
+      description: 'Unique anime artwork t-shirt, limited edition',
+      price: 899,
+      sizes: ['S', 'M', 'L'],
+      colors: ['Black', 'Gray'],
+      details: 'Vibrant anime artwork on soft cotton blend. Limited stock available.',
+      category: 'limited-edition',
+      inStock: true,
+      rating: 4.9,
+      reviews: 98,
+      material: 'Cotton Blend',
+      care: 'Machine wash cold, tumble dry low'
+    },
+  ];
+
+  // Combine regular products with limited edition products
+  const allProducts = [...products, ...limitedEditionProducts];
+  
+  // Find product by ID (string or number)
+  const product = allProducts.find(p => p.id == id);
 
   if (!product) {
     return (

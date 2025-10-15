@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bilbo+Swash+Caps&family=Marcellus+SC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bilbo+Swash+Caps&family=Marcellus+SC&family=Metal+Mania&display=swap');
 @import "tailwindcss";
 
 /* Font classes */
@@ -8,6 +8,10 @@
 
 .font-marcellus {
   font-family: 'Marcellus SC', serif;
+}
+
+.font-mercelus {
+  font-family: 'Metal Mania', cursive;
 }
 
 /* Custom marquee animation */

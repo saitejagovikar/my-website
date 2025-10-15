@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { products, customizableProducts } from '../data/products';
 import PhotoBanner from './PhotoBanner';
 import ElectricBorder from './ElectricBorder';
+import LimitedEdition from './LimitedEdition';
 
 function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
   const ProductCard = ({ product, customizable }) => (
     <div
       key={product.id}
-      className={`group relative border rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 
+      className={`group relative border rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 shadow-md hover:shadow-xl
         ${customizable ? "border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50" : "border-gray-200 bg-white"}`}
     >
       {/* Image */}
@@ -127,6 +128,11 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
+          </div>
+
+          {/* Limited Edition Section */}
+          <div className="mt-16 w-full">
+            <LimitedEdition />
           </div>
         </div>
         

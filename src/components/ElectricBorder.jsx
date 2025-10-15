@@ -1,186 +1,177 @@
-import { useEffect, useId, useLayoutEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 function hexToRgba(hex, alpha = 1) {
   if (!hex) return `rgba(0,0,0,${alpha})`;
   let h = hex.replace('#', '');
-  if (h.length === 3) {
-    h = h
-      .split('')
-      .map(c => c + c)
-      .join('');
-  }
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
   const int = parseInt(h, 16);
   const r = (int >> 16) & 255;
   const g = (int >> 8) & 255;
   const b = int & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const ElectricBorder = ({ children, color = '#5227FF', speed = 1, chaos = 1, thickness = 2, className, style }) => {
-  const rawId = useId().replace(/[:]/g, '');
-  const filterId = `turbulent-displace-${rawId}`;
-  const svgRef = useRef(null);
-  const rootRef = useRef(null);
-  const strokeRef = useRef(null);
+const ElectricBorder = ({
+  children,
+  color = '#5227FF',
+  speed = 1,
+  thickness = 3, // Slightly increased default thickness
+  className = '',
+  style = {},
+  pulse = true,
+  intensity = 0.8,
+  shadow = true
+}) => {
+  const borderRef = useRef(null);
+  const animationId = useRef();
+  const animationStart = useRef(0);
 
-  const updateAnim = () => {
-    const svg = svgRef.current;
-    const host = rootRef.current;
-    if (!svg || !host) return;
-
-    if (strokeRef.current) {
-      strokeRef.current.style.filter = `url(#${filterId})`;
+  const animate = (timestamp) => {
+    if (!animationStart.current) animationStart.current = timestamp;
+    const elapsed = timestamp - animationStart.current;
+    const progress = (elapsed / (1000 / speed)) % 1;
+    
+    if (borderRef.current) {
+      const angle = progress * 360;
+      // Add a subtle pulsing effect to the scale
+      const scale = 1 + (Math.sin(progress * Math.PI * 2) * 0.02 * intensity);
+      borderRef.current.style.setProperty('--gradient-angle', `${angle}deg`);
+      borderRef.current.style.transform = `scale(${scale})`;
     }
-
-    const width = Math.max(1, Math.round(host.clientWidth || host.getBoundingClientRect().width || 0));
-    const height = Math.max(1, Math.round(host.clientHeight || host.getBoundingClientRect().height || 0));
-
-    const dyAnims = Array.from(svg.querySelectorAll('feOffset > animate[attributeName="dy"]'));
-    if (dyAnims.length >= 2) {
-      dyAnims[0].setAttribute('values', `${height}; 0`);
-      dyAnims[1].setAttribute('values', `0; -${height}`);
-    }
-
-    const dxAnims = Array.from(svg.querySelectorAll('feOffset > animate[attributeName="dx"]'));
-    if (dxAnims.length >= 2) {
-      dxAnims[0].setAttribute('values', `${width}; 0`);
-      dxAnims[1].setAttribute('values', `0; -${width}`);
-    }
-
-    const baseDur = 6;
-    const dur = Math.max(0.001, baseDur / (speed || 1));
-    [...dyAnims, ...dxAnims].forEach(a => a.setAttribute('dur', `${dur}s`));
-
-    const disp = svg.querySelector('feDisplacementMap');
-    if (disp) disp.setAttribute('scale', String(30 * (chaos || 1)));
-
-    const filterEl = svg.querySelector(`#${CSS.escape(filterId)}`);
-    if (filterEl) {
-      filterEl.setAttribute('x', '-200%');
-      filterEl.setAttribute('y', '-200%');
-      filterEl.setAttribute('width', '500%');
-      filterEl.setAttribute('height', '500%');
-    }
-
-    requestAnimationFrame(() => {
-      [...dyAnims, ...dxAnims].forEach(a => {
-        if (typeof a.beginElement === 'function') {
-          try {
-            a.beginElement();
-          } catch {
-            console.warn('ElectricBorder: beginElement failed');
-          }
-        }
-      });
-    });
+    
+    animationId.current = requestAnimationFrame(animate);
   };
 
   useEffect(() => {
-    updateAnim();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speed, chaos]);
+    if (pulse) {
+      animationStart.current = 0;
+      animationId.current = requestAnimationFrame(animate);
+    } else if (animationId.current) {
+      cancelAnimationFrame(animationId.current);
+      if (borderRef.current) {
+        borderRef.current.style.transform = 'scale(1)';
+      }
+    }
+    return () => {
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+      }
+    };
+  }, [pulse, speed, intensity]);
 
-  useLayoutEffect(() => {
-    if (!rootRef.current) return;
-    const ro = new ResizeObserver(() => updateAnim());
-    ro.observe(rootRef.current);
-    updateAnim();
-    return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    return () => {
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+      }
+    };
   }, []);
 
-  const inheritRadius = {
-    borderRadius: style?.borderRadius ?? 'inherit'
-  };
-
-  const strokeStyle = {
-    ...inheritRadius,
-    borderWidth: thickness,
-    borderStyle: 'solid',
-    borderColor: color
-  };
-
-  const glow1Style = {
-    ...inheritRadius,
-    borderWidth: thickness,
-    borderStyle: 'solid',
-    borderColor: hexToRgba(color, 0.6),
-    filter: `blur(${0.5 + thickness * 0.25}px)`,
-    opacity: 0.5
-  };
-
-  const glow2Style = {
-    ...inheritRadius,
-    borderWidth: thickness,
-    borderStyle: 'solid',
-    borderColor: color,
-    filter: `blur(${2 + thickness * 0.5}px)`,
-    opacity: 0.5
-  };
-
-  const bgGlowStyle = {
-    ...inheritRadius,
-    transform: 'scale(1.08)',
-    filter: 'blur(32px)',
-    opacity: 0.3,
-    zIndex: -1,
-    background: `linear-gradient(-30deg, ${hexToRgba(color, 0.8)}, transparent, ${color})`
-  };
+  // Enhanced color variations for a more vibrant effect
+  const color1 = hexToRgba(color, 0.9);
+  const color2 = hexToRgba(color, 0.6);
+  const color3 = hexToRgba(color, 0.9);
 
   return (
-    <div ref={rootRef} className={'relative isolate ' + (className ?? '')} style={style}>
-      <svg
-        ref={svgRef}
-        className="fixed -left-[10000px] -top-[10000px] w-[10px] h-[10px] opacity-[0.001] pointer-events-none"
-        aria-hidden
-        focusable="false"
-      >
-        <defs>
-          <filter id={filterId} colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="1" />
-            <feOffset in="noise1" dx="0" dy="0" result="offsetNoise1">
-              <animate attributeName="dy" values="700; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
-            </feOffset>
-
-            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="1" />
-            <feOffset in="noise2" dx="0" dy="0" result="offsetNoise2">
-              <animate attributeName="dy" values="0; -700" dur="6s" repeatCount="indefinite" calcMode="linear" />
-            </feOffset>
-
-            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="2" />
-            <feOffset in="noise1" dx="0" dy="0" result="offsetNoise3">
-              <animate attributeName="dx" values="490; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
-            </feOffset>
-
-            <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="2" />
-            <feOffset in="noise2" dx="0" dy="0" result="offsetNoise4">
-              <animate attributeName="dx" values="0; -490" dur="6s" repeatCount="indefinite" calcMode="linear" />
-            </feOffset>
-
-            <feComposite in="offsetNoise1" in2="offsetNoise2" result="part1" />
-            <feComposite in="offsetNoise3" in2="offsetNoise4" result="part2" />
-            <feBlend in="part1" in2="part2" mode="color-dodge" result="combinedNoise" />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="combinedNoise"
-              scale="30"
-              xChannelSelector="R"
-              yChannelSelector="B"
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      <div className="absolute inset-0 pointer-events-none" style={inheritRadius}>
-        <div ref={strokeRef} className="absolute inset-0 box-border" style={strokeStyle} />
-        <div className="absolute inset-0 box-border" style={glow1Style} />
-        <div className="absolute inset-0 box-border" style={glow2Style} />
-        <div className="absolute inset-0" style={bgGlowStyle} />
-      </div>
-
-      <div className="relative" style={inheritRadius}>
+    <div 
+      ref={borderRef}
+      className={`electric-border ${className}`}
+      style={{
+        '--thickness': `${thickness}px`,
+        '--color1': color1,
+        '--color2': color2,
+        '--color3': color3,
+        '--shadow-color': hexToRgba(color, 0.3),
+        transform: 'scale(1)',
+        transition: 'transform 0.3s ease-out',
+        ...style,
+      }}
+      data-shadow={shadow}
+    >
+      <div className="electric-border__content">
         {children}
       </div>
+      <style jsx>{`
+        @property --gradient-angle {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+
+        .electric-border {
+          --gradient-angle: 0deg;
+          position: relative;
+          background: conic-gradient(
+            from var(--gradient-angle),
+            var(--color1),
+            var(--color2),
+            var(--color3),
+            var(--color1)
+          );
+          padding: var(--thickness);
+          border-radius: inherit;
+          z-index: 0;
+          transform-origin: center;
+          will-change: transform;
+          box-shadow: 0 0 0 0 transparent;
+          transition: box-shadow 0.3s ease-out;
+        }
+
+        .electric-border::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          padding: var(--thickness);
+          background: inherit;
+          -webkit-mask: 
+            linear-gradient(#fff 0 0) content-box, 
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+                  mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        .electric-border[data-shadow="true"] {
+          box-shadow: 
+            0 0 30px 0 var(--shadow-color),
+            0 0 15px 0 var(--shadow-color);
+        }
+
+        .electric-border[data-shadow="true"]:hover {
+          box-shadow: 
+            0 0 45px 5px var(--shadow-color),
+            0 0 25px 0 var(--shadow-color);
+        }
+
+        .electric-border__content {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          height: 100%;
+          border-radius: inherit;
+          background: ${style.background || 'inherit'};
+          overflow: hidden;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .electric-border {
+            animation: none !important;
+            transform: none !important;
+            background: linear-gradient(
+              90deg,
+              var(--color1),
+              var(--color2),
+              var(--color3),
+              var(--color1)
+            );
+          }
+          
+          .electric-border[data-shadow="true"] {
+            box-shadow: 0 0 20px 0 var(--shadow-color);
+          }
+        }
+      `}</style>
     </div>
   );
 };
