@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
@@ -12,17 +12,18 @@ import ProductDetail from './pages/ProductDetail.jsx';
 import Customize from './pages/Customize.jsx';
 import { allProducts } from './data/products.js';
 
-
 import LoginPage from './pages/Login.jsx';
 import ProfilePage from './pages/Profile.jsx';
 import Checkout from './pages/Checkout.jsx';
 import AnnouncementBanner from './components/AnnouncementBanner';
+import AdminPage from './pages/Admin.jsx';
 
 export default function App() {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('cart');
@@ -127,7 +128,7 @@ export default function App() {
   
   const handleCheckout = () => {
     if (!user) {
-      alert("Please login to proceed with checkout");
+      alert("Please login to proceed to checkout");
       navigate("/login", { state: { from: '/checkout' } });
       return;
     }
@@ -142,24 +143,28 @@ export default function App() {
   const cartItemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
 
   // Layout component to wrap pages with Navbar and Footer
-  const Layout = ({ children }) => (
-    <div className="min-h-screen flex flex-col">
-      <div className="relative z-50">
-        {/* Announcement banner - static (scrolls away) */}
-        <AnnouncementBanner />
-        {/* Navbar - fixed to top */}
-        <Navbar user={user} cartCount={cartItemCount} onLogout={handleLogout} />
-      </div>
+  const Layout = ({ children }) => {
+    const location = useLocation();
+    const isHome = location.pathname === '/';
+    return (
+      <div className="min-h-screen flex flex-col">
+        <div className="relative z-50">
+          {/* Announcement banner only on home page */}
+          {isHome && <AnnouncementBanner />}
+          {/* Navbar - fixed to top */}
+          <Navbar user={user} cartCount={cartItemCount} onLogout={handleLogout} />
+        </div>
 
-      {/* Main content - no top padding as navbar is positioned absolutely over content */}
-      <div className="relative z-10">
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        {/* Main content - no top padding as navbar is positioned absolutely over content */}
+        <div className="relative z-10">
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <Router>
@@ -233,6 +238,8 @@ export default function App() {
             </div>
           </Layout>
         } />
+
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </Router>
   );
@@ -278,7 +285,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
       reviews: 98,
       material: 'Cotton Blend',
       care: 'Machine wash cold, tumble dry low'
-    },
+    }
   ];
 
   // Combine regular products with limited edition products

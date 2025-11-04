@@ -204,6 +204,16 @@ export default function Login({ onLogin, user, onBack }) {
             >
               {isLogin ? 'Sign up here' : 'Sign in here'}
             </button>
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-gray-600">Admin access</p>
+              <button
+                onClick={() => navigate('/admin')}
+                className="text-blue-600 font-medium hover:text-gray-600 transition-colors mt-1"
+                style={{ fontFamily: 'Marcellus SC, serif' }}
+              >
+                Go to Admin Panel
+              </button>
+            </div>
           </div>
         </div>
       </div>

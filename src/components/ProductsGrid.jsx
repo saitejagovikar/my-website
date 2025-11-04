@@ -1,13 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddToCartButton from "./AddToCartButton";
 import { useNavigate } from 'react-router-dom';
-import { products, customizableProducts } from '../data/products';
+import { products as staticProducts, customizableProducts } from '../data/products';
+import { apiGet } from '../api/client';
 import PhotoBanner from './PhotoBanner';
 import ElectricBorder from './ElectricBorder';
 import LimitedEdition from './LimitedEdition';
 
 function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
   const navigate = useNavigate();
+  const [fetchedProducts, setFetchedProducts] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const data = await apiGet('/api/products?category=everyday');
+        if (isMounted) setFetchedProducts(data);
+      } catch (e) {
+        setError(e?.message || 'Failed to load');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
   const handleAddToCart = (e) => {
     if (!user) {
       alert("Please login to add items to cart");
@@ -125,7 +144,7 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
             EVERYDAY COLLECTION
           </h2>
           <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
+            {(fetchedProducts || staticProducts).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

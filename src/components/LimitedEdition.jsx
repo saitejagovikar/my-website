@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Container } from '@mui/material';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useNavigate } from 'react-router-dom';
+import { apiGet } from '../api/client';
 
 const LimitedEdition = () => {
   const navigate = useNavigate();
@@ -28,24 +29,20 @@ const LimitedEdition = () => {
     }
   }, [controls, inView]);
 
-  const products = [
-    {
-      id: 'dragon-tee',
-      name: 'Dragon Design Tee',
-      image: '/images/dragon.png',
-      alt: 'Dragon Limited Edition',
-      description: 'Exclusive dragon design t-shirt, limited edition',
-      price: 999,
-    },
-    {
-      id: 'anime-tee',
-      name: 'Anime Art Tee',
-      image: '/images/anime.png',
-      alt: 'Anime Limited Edition',
-      description: 'Unique anime artwork t-shirt, limited edition',
-      price: 999,
-    },
-  ];
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await apiGet('/api/products?category=limited-edition');
+        if (mounted) setProducts(data);
+      } catch (_) {
+        setProducts([]);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleViewDetails = (product) => {
     navigate(`/product/${product.id}`, {

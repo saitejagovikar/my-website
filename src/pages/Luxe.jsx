@@ -1,57 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { apiGet } from '../api/client';
 
 // Helper function to get image URLs
 const getImageUrl = (path) => {
   return path.startsWith('/') ? path : `/${path}`;
 };
 
-const luxuryProducts = [
-  { 
-    id: 201, 
-    name: "GOLDEN BLOOM TEE", 
-    price: 1299, 
-    originalPrice: 1999, 
-    image: getImageUrl('/images/black.png'), 
-    category: "luxury",
-    description: "Premium cotton with golden accents"
-  },
-  { 
-    id: 202, 
-    name: "SILK VELVET TEE", 
-    price: 1599, 
-    originalPrice: 2299, 
-    image: getImageUrl('/images/blue.png'), 
-    category: "luxury",
-    description: "Luxurious silk blend with velvet finish"
-  },
-  { 
-    id: 203, 
-    name: "DIAMOND CUT TEE", 
-    price: 1799, 
-    originalPrice: 2499, 
-    image: getImageUrl('/images/grey.png'), 
-    category: "luxury",
-    description: "Exclusive diamond-patterned design"
-  },
-  { 
-    id: 204, 
-    name: "ROYAL EMBROIDERY TEE", 
-    price: 1999, 
-    originalPrice: 2799, 
-    image: getImageUrl('/images/white.png'), 
-    category: "luxury",
-    description: "Hand-embroidered royal patterns"
-  },
-  { 
-    id: 205, 
-    name: "PREMIUM BLACK TEE", 
-    price: 1699, 
-    originalPrice: 2199, 
-    image: getImageUrl('/images/black.png'), 
-    category: "luxury",
-    description: "Luxury black tee with premium finish"
-  }
-];
+const useLuxeProducts = () => {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await apiGet('/api/products?category=luxe');
+        if (mounted) setItems(data);
+      } catch (_) {
+        setItems([]);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+  return items;
+};
 
 const ProductCard = ({ product, onViewProduct, addToCart, user }) => {
   const handleViewDetails = (e) => {
@@ -125,6 +95,7 @@ const ProductCard = ({ product, onViewProduct, addToCart, user }) => {
 };
 
 export default function Luxe({ addToCart, onViewProduct, user }) {
+  const luxuryProducts = useLuxeProducts();
   return (
     <div className="py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">

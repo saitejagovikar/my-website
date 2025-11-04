@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .preview { max-width: 300px; margin-top: 20px; }
+        #result { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Image Upload Test</h1>
+    <form id="uploadForm">
+        <div>
+            <label for="image">Select an image to upload (max 5MB):</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+        <div style="margin-top: 10px;">
+            <button type="submit">Upload Image</button>
+        </div>
+    </form>
+    
+    <div id="result"></div>
+    <div id="previewContainer">
+        <h3>Preview:</h3>
+        <img id="preview" class="preview" style="display: none;">
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('image');
+            const resultDiv = document.getElementById('result');
+            const previewImg = document.getElementById('preview');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showResult('Please select a file', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            console.log('Selected file:', file);
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            showResult('Uploading...', '');
+            
+            try {
+                const response = await fetch('http://localhost:5001/api/upload/image', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('Response data:', data);
+                } catch (e) {
+                    console.error('Failed to parse JSON response:', e);
+                    throw new Error('Invalid server response');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || `Server responded with status ${response.status}`);
+                }
+                
+                showResult('Upload successful!', 'success');
+                console.log('Upload successful:', data);
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showResult(`Error: ${error.message}`, 'error');
+            }
+        });
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = type;
+        }
+    </script>
+</body>
+</html>
