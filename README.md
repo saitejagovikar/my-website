@@ -41,9 +41,3 @@ This project demonstrates complete full-stack development and modern web archite
 ```bash
 git clone https://github.com/saitejagovikar/my-website.git
 cd my-website
-
-
-👨‍💻 Author
-
-Saiteja Govikar
-📍 Hyderabad, India
