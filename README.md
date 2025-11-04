@@ -1,58 +1,145 @@
-# React + Vite
+🛍️ Fashion Tee – MERN Full Stack eCommerce Website
+🚀 Full Stack Project built with React, Node.js, Express.js, and MongoDB
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a responsive eCommerce web application that allows users to view products, and an admin panel to manage product CRUD operations.
+The project demonstrates end-to-end full stack development — from REST APIs to dynamic frontend integration.
 
-Currently, two official plugins are available:
+🌟 Features
+🧑‍💻 User Side
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Browse products with responsive UI
 
-## React Compiler
+Product details page
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Add to cart (optional)
 
-## Expanding the ESLint configuration
+Dynamic product fetching from backend API
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🛠️ Admin Side
 
-## Backend API (Express + MongoDB)
+Admin Dashboard for CRUD operations
 
-A backend server is scaffolded under `server/`.
+Add, edit, and delete products and banners
 
-Setup:
+Secure API calls (ready for JWT integration)
 
-1. Create `server/.env` with:
+🧩 Tech Stack
+Layer	Technology
+Frontend	React (Vite) + Axios + Tailwind CSS
+Backend	Node.js + Express.js
+Database	MongoDB (Mongoose)
+Hosting (optional)	Netlify (frontend) / Render / Vercel (backend)
+📁 Folder Structure
+my-website/
+│
+├── server/                # Backend (Express + MongoDB)
+│   ├── models/            # Mongoose models
+│   ├── routes/            # API route files
+│   ├── controllers/       # Request handlers
+│   ├── index.js           # Entry point
+│   └── .env.example       # Environment variable sample
+│
+├── src/                   # Frontend (React)
+│   ├── components/        # UI Components
+│   ├── pages/             # React Pages
+│   ├── App.jsx            # Main App component
+│   └── main.jsx           # Entry point
+│
+├── package.json
+└── README.md
 
-```
-PORT=5001
-MONGODB_URI="mongodb+srv://saitejaadmin:<password>@cluster0.xjkexnm.mongodb.net/Cluster0dmin123?retryWrites=true&w=majority&appName=Cluster0"
-CORS_ORIGIN=http://localhost:5173
-```
+⚙️ Installation & Setup
+🔹 Prerequisites
 
-2. Install and run the API:
+Make sure you have installed:
 
-```bash
+Node.js (v18 or later)
+
+MongoDB (local or Atlas)
+
+npm or yarn
+
+🖥️ Backend Setup
+# Navigate to backend folder
 cd server
+
+# Install dependencies
 npm install
+
+# Create environment file
+cp .env.example .env
+
+🧾 Example .env file:
+PORT=5001
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/fashiontee
+CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=mysecret
+
+
+Run the backend:
+
 npm run dev
-```
 
-Frontend config:
 
-Create a `.env` at the project root with:
+Server will start at 👉 http://localhost:5001
 
-```
-VITE_API_BASE=http://localhost:5001
-```
+💻 Frontend Setup
+# Go back to project root
+cd ..
 
-Endpoints:
+# Install dependencies
+npm install
 
-- GET `http://localhost:5001/api/products?category=everyday|luxe|limited-edition|customizable`
-- GET `http://localhost:5001/api/products/:id`
-- GET `http://localhost:5001/api/banners`
-- POST `http://localhost:5001/api/admin/products` (create)
-- POST `http://localhost:5001/api/admin/banners` (create)
-- PUT `http://localhost:5001/api/admin/products/:id` (update)
-- PUT `http://localhost:5001/api/admin/banners/:id` (update)
-- DELETE `http://localhost:5001/api/admin/products/:id`
-- DELETE `http://localhost:5001/api/admin/banners/:id`
+# Create .env file
+echo "VITE_API_BASE=http://localhost:5001" > .env
+
+
+Run the frontend:
+
+npm run dev
+
+
+Frontend will start at 👉 http://localhost:5173
+
+🌐 API Endpoints
+Method	Endpoint	Description
+GET	/api/products	Fetch all products
+POST	/api/products	Add new product
+PUT	/api/products/:id	Update product
+DELETE	/api/products/:id	Delete product
+GET	/api/banner	Fetch homepage banners
+🧠 Key Learnings
+
+Building REST APIs using Express.js
+
+Integrating React frontend with backend APIs
+
+Using MongoDB & Mongoose for data modeling
+
+Environment configuration using .env
+
+Deploying full stack applications
+
+🛡️ Security & Best Practices
+
+All secrets stored in .env (never commit credentials)
+
+Cross-Origin requests handled via CORS
+
+Code modularized for scalability
+
+Ready for JWT-based authentication
+
+📸 Screenshots (optional)
+
+Add your app screenshots here to make it visually appealing.
+
+🧑‍💼 Author
+
+👨‍💻 Saiteja Govikar
+📍 Hyderabad, India
+🔗 Portfolio
+
+🔗 LinkedIn
+
+🔗 GitHub
