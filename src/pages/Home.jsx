@@ -35,7 +35,10 @@ export default function Home({
       
       {/* Conditionally render content based on active category */}
       {activeCategory === 'luxe' ? (
-        <Luxe />
+        <Luxe 
+          addToCart={addToCart} 
+          user={user}
+        />
       ) : (
         <ProductGrid 
           addToCart={addToCart} 

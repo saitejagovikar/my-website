@@ -1,6 +1,6 @@
 // Navbar.jsx (clean version)
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FiUser, FiShoppingCart, FiLogOut, FiHome, FiShoppingBag, FiMapPin, FiCreditCard } from 'react-icons/fi';
 
 function Navbar({ cartCount = 0, user, onLogout }) {
@@ -8,6 +8,7 @@ function Navbar({ cartCount = 0, user, onLogout }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => {
@@ -61,22 +62,38 @@ function Navbar({ cartCount = 0, user, onLogout }) {
     { icon: <FiCreditCard className="mr-3" />, label: 'Payment Methods', path: '/profile?tab=cards' },
   ];
 
+  // Check if we're on a product page or other non-home page
+  const isProductPage = location.pathname.startsWith('/product') || 
+                        location.pathname.startsWith('/customize') || 
+                        location.pathname.startsWith('/luxe') || 
+                        location.pathname.startsWith('/explore') ||
+                        location.pathname.startsWith('/about') ||
+                        location.pathname.startsWith('/profile');
+  
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-black/90 py-4 shadow-lg backdrop-blur-sm' 
+        isScrolled || isProductPage
+          ? 'bg-black/90 py-4 shadow-lg backdrop-blur-sm text-white' 
           : 'bg-transparent py-6 text-white'
       }`}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 transition-all duration-300">
-        <button 
-          onClick={handleLogoClick} 
-          className="text-3xl font-bold text-white" 
-          style={{ fontFamily: '"Marcellus SC", serif' }}
-        >
-          PrakriTee
-        </button>
+        <div className="flex flex-col items-center">
+          <button 
+            onClick={handleLogoClick} 
+            className="text-3xl font-bold text-white leading-none transition-all duration-300 transform hover:scale-105 hover:text-red-600" 
+            style={{ fontFamily: '"Nosifer", sans-serif', fontWeight: 400 }}
+          >
+            SLAY
+          </button>
+          <span 
+            className="text-xs text-gray-300 -mt-0.5 tracking-wider"
+            style={{ fontFamily: '"Zalando Sans Expanded", sans-serif', fontWeight: 300, fontStyle: 'normal', display: 'block', letterSpacing: '0.15em' }}
+          >
+            A FASHION TEE BRAND
+          </span>
+        </div>
 
         <div className="flex items-center space-x-6">
           <div className="relative" ref={profileRef}>

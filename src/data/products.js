@@ -77,4 +77,3 @@ export const customizableProducts = [
 
 export const allProducts = [...products, ...customizableProducts];
 
-

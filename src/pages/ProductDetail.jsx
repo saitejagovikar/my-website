@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddToCartButton from '../components/AddToCartButton';
+import { getDirectImageUrl } from '../utils/imageUtils';
 
 export default function ProductDetail({ product, onBack, onAddToCart, user }) {
   // Scroll to top when component mounts
@@ -9,34 +10,25 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
     window.scrollTo(0, 0);
   }, []);
 
-  const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [sizeError, setSizeError] = useState('');
 
-  // Rest of the component code remains the same...
-  const getImageUrl = (path) => {
-    return path.startsWith('/') ? path : `/${path}`;
-  };
-
-  const images = {
-    black: '/images/black.png',
-    blue: '/images/blue.png',
-    grey: '/images/grey.png',
-    white: '/images/white.png',
-    bargandi: '/images/bargandi.png'
-  };
-
-  const productImages = [
-    product.image || images.black,
-    images.blue,
-    images.grey,
-    images.white,
-    images.bargandi
-  ].filter((img, index, self) => {
-    return img && self.indexOf(img) === index;
-  });
+  // Get all available images (from images array or single image)
+  const allImages = product.images && product.images.length > 0 
+    ? product.images 
+    : product.image 
+      ? [product.image] 
+      : [];
+      
+  // Current selected image index
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Current product image being displayed
+  const productImage = allImages.length > 0 
+    ? getDirectImageUrl(allImages[currentImageIndex])
+    : '/images/black.png'; // fallback image
 
   const handleImageClick = () => {
     setIsZoomed(!isZoomed);
@@ -86,7 +78,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -102,66 +94,78 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div 
-              className={`relative aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
-                isZoomed ? 'scale-110' : 'hover:scale-105'
-              }`}
-              onClick={handleImageClick}
-            >
-              <img 
-                src={productImages[selectedImage]} 
-                alt={product.name}
-                className="w-full h-full object-cover"
-                onLoad={(e) => {
-                  e.target.style.opacity = '1';
-                  e.target.style.filter = 'blur(0)';
-                }}
-                style={{
-                  opacity: 0,
-                  filter: 'blur(8px)',
-                  transition: 'opacity 0.3s ease-out, filter 0.3s ease-out'
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute top-4 right-4 bg-white/90 text-black px-2 py-1 rounded-full text-xs font-semibold">
-                {product.category === 'luxury' ? 'LUXE' : 'EVERYDAY'}
-              </div>
-              {isZoomed && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-sm">Click to zoom out</span>
+          {/* Product Image */}
+          <div>
+            {/* Image Gallery */}
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Thumbnail Gallery - Left Side */}
+              {allImages.length > 1 && (
+                <div className="flex md:flex-col space-y-2 md:space-y-3 space-x-2 md:space-x-0 overflow-y-auto md:max-h-[500px] py-2 -mx-2 px-2 md:px-0 md:mx-0 md:py-0 md:pr-4">
+                  {allImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex 
+                          ? 'border-black' 
+                          : 'border-transparent hover:border-gray-300'
+                      }`}
+                    >
+                      <img 
+                        src={getDirectImageUrl(img)} 
+                        alt={`${product.name} - ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = '/images/black.png';
+                        }}
+                      />
+                    </button>
+                  ))}
                 </div>
               )}
-            </div>
-
-            {/* Thumbnail Images */}
-            <div className="grid grid-cols-4 gap-2">
-              {productImages.map((image, index) => (
-                <div
-                  key={index}
-                  className={`relative aspect-square bg-gray-200 rounded-lg cursor-pointer overflow-hidden transition-all duration-200 ${
-                    selectedImage === index ? 'ring-2 ring-black' : 'hover:ring-1 hover:ring-gray-300'
+              
+              {/* Main Image */}
+              <div className="flex-1">
+                <div 
+                  className={`relative aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
+                    isZoomed ? 'scale-110' : 'hover:scale-105'
                   }`}
-                  onClick={() => setSelectedImage(index)}
+                  onClick={handleImageClick}
                 >
                   <img 
-                    src={image} 
-                    alt={`${product.name} view ${index + 1}`}
+                    src={productImage} 
+                    alt={product.name}
                     className="w-full h-full object-cover"
                     onLoad={(e) => {
                       e.target.style.opacity = '1';
                       e.target.style.filter = 'blur(0)';
                     }}
+                    onError={(e) => {
+                      e.target.src = '/images/black.png';
+                      e.target.style.opacity = '1';
+                      e.target.style.filter = 'blur(0)';
+                    }}
                     style={{
                       opacity: 0,
-                      filter: 'blur(4px)',
+                      filter: 'blur(8px)',
                       transition: 'opacity 0.3s ease-out, filter 0.3s ease-out'
                     }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute top-4 right-4 bg-white/90 text-black px-2 py-1 rounded-full text-xs font-semibold">
+                    {product.category === 'luxe' || product.category === 'luxury' 
+                      ? 'LUXE' 
+                      : product.category === 'limited-edition' 
+                        ? 'LIMITED EDITION' 
+                        : 'EVERYDAY'}
+                  </div>
+                  {isZoomed && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <span className="text-white text-sm">Click to zoom out</span>
+                    </div>
+                  )}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
 

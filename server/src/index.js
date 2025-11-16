@@ -7,6 +7,8 @@ import { connectToDatabase } from './lib/db.js';
 import publicRouter from './routes/public.js';
 import adminRouter from './routes/admin.js';
 import uploadRouter from './routes/upload.js';
+import userRouter from './routes/user.js';
+import ordersRouter from './routes/orders.js';
 
 // Load environment variables first
 dotenv.config();
@@ -51,6 +53,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api', publicRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/user', userRouter);
+app.use('/api/orders', ordersRouter);
 
 // 404 handler
 app.use((req, res) => {

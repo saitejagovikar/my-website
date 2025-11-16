@@ -21,15 +21,26 @@ export async function connectToDatabase() {
   try {
     console.log('Connecting to MongoDB...');
     
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // 5 seconds timeout for server selection
-      socketTimeoutMS: 30000, // 30 seconds before timing out
-      connectTimeoutMS: 10000, // 10 seconds to connect
-      maxPoolSize: 10, // Maximum number of connections in the connection pool
+    console.log('Attempting to connect to MongoDB with URI:', uri.replace(/:([^:]+)@/, ':***@'));
+    
+    const options = {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      maxPoolSize: 10,
       retryWrites: true,
       w: 'majority',
-      appName: 'prakritee-server' // Identify this application in MongoDB logs
-    });
+      retryReads: true,
+      ssl: true,
+      tlsAllowInvalidCertificates: true, // Only for development
+      appName: 'slay-server',
+      authSource: 'admin',
+      family: 4 // Force IPv4
+    };
+    
+    console.log('Connection options:', JSON.stringify(options, null, 2));
+    
+    await mongoose.connect(uri, options);
     
     isConnected = true;
     console.log('MongoDB connected successfully');

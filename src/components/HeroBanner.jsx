@@ -9,7 +9,7 @@ function HeroBanner() {
     {
       src: '/images/banner1.png',
       alt: 'Hero Image 1',
-      title: 'Welcome to PrakriTee',
+      title: 'Welcome to SLAY',
       subtitle: 'Discover Amazing Products',
       textColor: 'text-black',
     },

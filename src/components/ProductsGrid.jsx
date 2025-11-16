@@ -17,7 +17,8 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
     let isMounted = true;
     (async () => {
       try {
-        const data = await apiGet('/api/products?category=everyday');
+        // Add timestamp to prevent caching
+        const data = await apiGet(`/api/products?category=everyday&_t=${Date.now()}`);
         if (isMounted) setFetchedProducts(data);
       } catch (e) {
         setError(e?.message || 'Failed to load');
@@ -40,10 +41,23 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
 
 
   // ✅ Reusable card component
-  const ProductCard = ({ product, customizable }) => (
+  const ProductCard = ({ product, customizable }) => {
+    // Normalize product ID - handle both _id (from API) and id (from static data)
+    const productId = product._id || product.id;
+    
+    const handleCardClick = (e) => {
+      // Don't navigate if clicking on buttons or links
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+        return;
+      }
+      navigate(`/product/${productId}`);
+    };
+    
+    return (
     <div
-      key={product.id}
-      className={`group relative border rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 shadow-md hover:shadow-xl
+      key={productId}
+      onClick={handleCardClick}
+      className={`group relative border rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 shadow-md hover:shadow-xl cursor-pointer
         ${customizable ? "border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50" : "border-gray-200 bg-white"}`}
     >
       {/* Image */}
@@ -108,7 +122,7 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/customize/${product.id}`);
+              navigate(`/customize/${productId}`);
             }}
             className="w-full py-2.5 text-xs rounded-lg hover:opacity-90 transition-opacity duration-200 font-medium tracking-wide uppercase
               bg-gradient-to-r from-purple-600 to-blue-600 text-white"
@@ -121,11 +135,7 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
               {product.description || 'Premium quality product'}
             </div>
             <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/product/${product.id}`);
-              }}
-              className="text-xs text-gray-600 hover:text-gray-800 cursor-pointer transition-colors duration-200 text-right"
+              className="text-xs text-gray-600 hover:text-gray-800 transition-colors duration-200 text-right"
             >
               View Details →
             </div>
@@ -133,7 +143,8 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="py-8">
@@ -145,7 +156,7 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
           </h2>
           <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {(fetchedProducts || staticProducts).map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id || product.id} product={product} />
             ))}
           </div>
 

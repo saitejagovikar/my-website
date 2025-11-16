@@ -1,32 +1,49 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiGet } from '../api/client';
-
-// Helper function to get image URLs
-const getImageUrl = (path) => {
-  return path.startsWith('/') ? path : `/${path}`;
-};
+import { getDirectImageUrl } from '../utils/imageUtils';
 
 const useLuxeProducts = () => {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const data = await apiGet('/api/products?category=luxe');
-        if (mounted) setItems(data);
+        if (mounted) {
+          setItems(data);
+          setLoading(false);
+        }
       } catch (_) {
-        setItems([]);
+        if (mounted) {
+          setItems([]);
+          setLoading(false);
+        }
       }
     })();
     return () => { mounted = false; };
   }, []);
-  return items;
+  return { items, loading };
 };
 
-const ProductCard = ({ product, onViewProduct, addToCart, user }) => {
+const ProductCard = ({ product, addToCart, user }) => {
+  const navigate = useNavigate();
+  
+  // Normalize product ID - handle both _id (from API) and id (from static data)
+  const productId = product._id || product.id;
+  
+  const handleCardClick = (e) => {
+    // Don't navigate if clicking on buttons or links
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    navigate(`/product/${productId}`);
+  };
+
   const handleViewDetails = (e) => {
     e.stopPropagation();
-    onViewProduct(product);
+    navigate(`/product/${productId}`);
   };
 
   const handleAddToCart = (e) => {
@@ -42,15 +59,26 @@ const ProductCard = ({ product, onViewProduct, addToCart, user }) => {
     <div className="h-full flex flex-col">
       <div
         className="group relative cursor-pointer border border-gray-200 rounded-lg overflow-hidden transform transition-all duration-500 hover:scale-105 bg-white flex flex-col h-full"
-        onClick={handleViewDetails}
+        onClick={handleCardClick}
       >
         <div className="relative flex-shrink-0">
           <div className="aspect-square flex items-center justify-center overflow-hidden bg-gray-100">
             <img
-              src={product.image}
+              src={
+                product.images && product.images.length > 0
+                  ? getDirectImageUrl(product.images[0])
+                  : product.image
+                    ? getDirectImageUrl(product.image)
+                    : '/images/black.png'
+              }
               alt={product.name}
               className="object-cover w-full h-full"
               onLoad={(e) => {
+                e.target.style.opacity = '1';
+                e.target.style.filter = 'blur(0)';
+              }}
+              onError={(e) => {
+                e.target.src = '/images/black.png';
                 e.target.style.opacity = '1';
                 e.target.style.filter = 'blur(0)';
               }}
@@ -94,10 +122,10 @@ const ProductCard = ({ product, onViewProduct, addToCart, user }) => {
   );
 };
 
-export default function Luxe({ addToCart, onViewProduct, user }) {
-  const luxuryProducts = useLuxeProducts();
+export default function Luxe({ addToCart, user }) {
+  const { items: luxuryProducts, loading } = useLuxeProducts();
   return (
-    <div className="py-8">
+    <div className="pt-24 pb-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-black" style={{ fontFamily: "Marcellus SC, serif" }}>
           LUXE COLLECTION
@@ -105,17 +133,31 @@ export default function Luxe({ addToCart, onViewProduct, user }) {
         <p className="text-lg text-gray-600 text-center max-w-2xl mx-auto mb-12" style={{ fontFamily: 'Marcellus SC, serif' }}>
           Discover our premium collection of luxury tees crafted with the finest materials and exquisite attention to detail.
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
-          {luxuryProducts.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              addToCart={addToCart}
-              onViewProduct={onViewProduct}
-              user={user}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading products...</p>
+          </div>
+        ) : luxuryProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No products found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
+            {luxuryProducts.map((product) => {
+              // Normalize product ID - handle both _id (from API) and id (from static data)
+              const productId = product._id || product.id;
+              return (
+                <ProductCard 
+                  key={productId} 
+                  product={product} 
+                  addToCart={addToCart}
+                  user={user}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

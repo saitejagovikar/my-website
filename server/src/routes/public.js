@@ -1,8 +1,19 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
 import { Banner } from '../models/Banner.js';
 
 const router = Router();
+
+// Health check endpoint
+router.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
 
 // Banners
 router.get('/banners', async (_req, res) => {
@@ -26,6 +37,10 @@ router.get('/products/:id', async (req, res) => {
 });
 
 export default router;
+
+
+
+
 
 
 

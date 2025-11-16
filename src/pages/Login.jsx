@@ -2,11 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { apiPost } from '../api/client';
 
 export default function Login({ onLogin, user, onBack }) {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -20,31 +23,59 @@ export default function Login({ onLogin, user, onBack }) {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error on input change
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
-    if (isLogin) {
-      if (!formData.email || !formData.password) {
-        alert('Please enter email and password');
-        return;
+    try {
+      if (isLogin) {
+        if (!formData.email || !formData.password) {
+          setError('Please enter email and password');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Login API call
+        const userData = await apiPost('/api/user/login', {
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        onLogin(userData);
+        setShowSuccess(true);
+        setTimeout(() => navigate('/'), 1200);
+      } else {
+        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+          setError('Please fill all fields');
+          setIsLoading(false);
+          return;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Register API call
+        const userData = await apiPost('/api/user/register', {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        onLogin(userData);
+        setShowSuccess(true);
+        setTimeout(() => navigate('/'), 1200);
       }
-      onLogin({ name: 'User', email: formData.email });
-    } else {
-      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-        alert('Please fill all fields');
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        alert('Passwords do not match');
-        return;
-      }
-      onLogin({ name: formData.name, email: formData.email });
+    } catch (error) {
+      setError(error.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setShowSuccess(true);
-    setTimeout(() => navigate('/'), 1200);
   };
 
   return (
@@ -72,13 +103,18 @@ export default function Login({ onLogin, user, onBack }) {
             </svg>
           </button>
           <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Marcellus SC, serif' }}>
-            {isLogin ? 'Welcome to PrakriTee' : 'Sign Up'}
+            {isLogin ? 'Welcome to SLAY' : 'Sign Up'}
           </h2>
           <div className="w-6"></div> {/* Spacer */}
         </div>
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div>
@@ -142,10 +178,11 @@ export default function Login({ onLogin, user, onBack }) {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition-colors font-medium"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Marcellus SC, serif' }}
             >
-              {isLogin ? 'SIGN IN' : 'CREATE ACCOUNT'}
+              {isLoading ? 'Please wait...' : (isLogin ? 'SIGN IN' : 'CREATE ACCOUNT')}
             </button>
           </form>
 

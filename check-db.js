@@ -5,7 +5,7 @@ async function checkConnection() {
     console.log('Attempting to connect to MongoDB...');
     
     // Connect to MongoDB
-    await mongoose.connect('mongodb://localhost:27017/prakritee', {
+    await mongoose.connect('mongodb://localhost:27017/slay', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiPost, apiGet } from '../api/client';
 
 // Payment method icons
 const PaymentIcons = {
@@ -22,6 +23,9 @@ function Checkout({ cart, user }) {
   const [activeTab, setActiveTab] = useState('razorpay');
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [useSavedAddress, setUseSavedAddress] = useState(false);
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -34,7 +38,56 @@ function Checkout({ cart, user }) {
     saveAddress: false
   });
 
-  const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+  // Load saved addresses if user is logged in
+  useEffect(() => {
+    if (user?.email) {
+      loadSavedAddresses();
+    }
+  }, [user]);
+
+  const loadSavedAddresses = async () => {
+    if (!user?.email) return;
+    try {
+      const addresses = await apiGet(`/api/user/addresses?email=${encodeURIComponent(user.email)}`);
+      setSavedAddresses(addresses);
+      // Auto-select default address if available
+      const defaultAddress = addresses.find(addr => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress._id);
+        setUseSavedAddress(true);
+        populateFormFromAddress(defaultAddress);
+      }
+    } catch (error) {
+      console.error('Failed to load addresses:', error);
+    }
+  };
+
+  const populateFormFromAddress = (address) => {
+    setFormData({
+      name: address.name || address.fullName || '',
+      email: user?.email || '',
+      phone: address.phone || '',
+      address: address.addressLine1 || address.street || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || address.zip || '',
+      saveAddress: false
+    });
+  };
+
+  const handleAddressSelect = (addressId) => {
+    setSelectedAddressId(addressId);
+    const address = savedAddresses.find(addr => addr._id === addressId);
+    if (address) {
+      populateFormFromAddress(address);
+      setUseSavedAddress(true);
+    }
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+  const shipping = subtotal >= 999 ? 0 : 99;
+  const tax = Math.round(subtotal * 0.18);
+  const total = subtotal + shipping + tax;
   const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   const handleInputChange = (e) => {
@@ -69,8 +122,20 @@ function Checkout({ cart, user }) {
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!user?.email) {
+      alert('Please login to place an order');
+      navigate('/login');
+      return;
+    }
+
+    if (cart.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+
     const errors = validateForm();
     
     if (Object.keys(errors).length > 0) {
@@ -83,13 +148,85 @@ function Checkout({ cart, user }) {
     
     setIsSubmitting(true);
     
-    // Here you would typically process the payment
-    setTimeout(() => {
-      alert('Order placed successfully!');
-      // Clear cart and redirect to order confirmation
-      navigate('/orders');
+    try {
+      // Prepare order items
+      const items = cart.map(item => ({
+        productId: item.id || item._id,
+        productName: item.name,
+        price: item.price,
+        quantity: item.quantity || 1,
+        size: item.size,
+        image: item.image,
+        customizations: item.customizations || undefined,
+      }));
+
+      // Use already calculated pricing from component level
+      const discount = 0; // Can be added later for coupons
+
+      // Prepare shipping address
+      const shippingAddress = {
+        name: formData.name,
+        phone: formData.phone,
+        addressLine1: formData.address,
+        addressLine2: '',
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        country: 'India',
+      };
+
+      // Prepare payment method info
+      const paymentMethod = {
+        method: activeTab === 'razorpay' ? 'razorpay' : 'cod',
+        transactionId: null,
+        paymentId: null,
+        cardLast4: null,
+      };
+
+      // Create order
+      const orderData = {
+        email: user.email,
+        items,
+        shippingAddress,
+        paymentMethod,
+        pricing: {
+          subtotal,
+          shipping,
+          tax,
+          discount,
+          total: total - discount, // Apply discount if any (currently 0)
+        },
+        status: activeTab === 'cod' ? 'confirmed' : 'pending',
+        paymentStatus: activeTab === 'cod' ? 'pending' : 'pending',
+      };
+
+      const order = await apiPost('/api/orders', orderData);
+
+      // Save address if requested
+      if (formData.saveAddress && !useSavedAddress) {
+        try {
+          await apiPost('/api/user/addresses', {
+            email: user.email,
+            ...shippingAddress,
+            isDefault: savedAddresses.length === 0, // Set as default if first address
+          });
+        } catch (error) {
+          console.error('Failed to save address:', error);
+          // Don't fail the order if address save fails
+        }
+      }
+
+      // Clear cart from localStorage
+      localStorage.removeItem('cart');
+
+      // Redirect to order confirmation
+      navigate(`/orders?orderId=${order._id}&success=true`);
+      
+    } catch (error) {
+      console.error('Order creation error:', error);
+      alert('Failed to place order: ' + (error.message || 'Please try again'));
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const renderPaymentMethod = () => {
@@ -302,13 +439,19 @@ function Checkout({ cart, user }) {
           <div className="pt-4">
             <div className="flex justify-between py-2">
               <span>Subtotal ({totalItems} items)</span>
-              <span>₹{total.toLocaleString('en-IN')}</span>
+              <span>₹{subtotal.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between py-2">
               <span>Shipping</span>
-              <span className="text-green-600">Free</span>
+              <span className={shipping === 0 ? "text-green-600" : ""}>
+                {shipping === 0 ? 'Free' : `₹${shipping}`}
+              </span>
             </div>
-            <div className="flex justify-between py-2 font-medium text-lg mt-2">
+            <div className="flex justify-between py-2">
+              <span>Tax (GST)</span>
+              <span>₹{tax.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex justify-between py-2 font-medium text-lg mt-2 border-t pt-2">
               <span>Total</span>
               <span>₹{total.toLocaleString('en-IN')}</span>
             </div>
@@ -338,6 +481,67 @@ function Checkout({ cart, user }) {
           <div className="lg:flex-1 space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <h2 className="text-xl font-medium mb-4">Delivery Information</h2>
+              
+              {/* Saved Addresses */}
+              {savedAddresses.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Use Saved Address
+                  </label>
+                  <div className="space-y-2">
+                    {savedAddresses.map((address) => (
+                      <div
+                        key={address._id}
+                        className={`p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                          selectedAddressId === address._id
+                            ? 'border-black bg-black/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => handleAddressSelect(address._id)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium">{address.name}</span>
+                              {address.isDefault && (
+                                <span className="text-xs bg-gray-900 text-white px-2 py-0.5 rounded">Default</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{address.phone}</p>
+                            <p className="text-sm text-gray-700">
+                              {address.addressLine1}
+                              {address.addressLine2 && `, ${address.addressLine2}`}
+                            </p>
+                            <p className="text-sm text-gray-700">
+                              {address.city}, {address.state} - {address.pincode}
+                            </p>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            selectedAddressId === address._id
+                              ? 'border-black bg-black'
+                              : 'border-gray-300'
+                          }`}>
+                            {selectedAddressId === address._id && (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseSavedAddress(false);
+                      setSelectedAddressId(null);
+                    }}
+                    className="mt-3 text-sm text-gray-600 hover:text-gray-900 underline"
+                  >
+                    Use different address
+                  </button>
+                </div>
+              )}
+
               <form className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

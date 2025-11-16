@@ -7,21 +7,55 @@
  * @param {string} url - The image URL
  * @returns {string} Processed image URL
  */
+/**
+ * Get direct image URL from Cloudinary URL if needed
+ * @param {string} url - The image URL
+ * @returns {string} Processed image URL
+ */
 export const getDirectImageUrl = (url) => {
-  if (!url) return '';
+  if (!url) {
+    console.warn('No URL provided to getDirectImageUrl');
+    return '';
+  }
   
-  // If it's already a direct URL or data URL, return as is
-  if (url.startsWith('http') || url.startsWith('data:image') || url.startsWith('blob:')) {
+  try {
+    // If it's already a data URL or blob URL, return as is
+    if (typeof url !== 'string' || url.startsWith('data:image') || url.startsWith('blob:')) {
+      return url;
+    }
+
+    // If it's a Cloudinary URL, ensure it's using https
+    if (url.includes('res.cloudinary.com')) {
+      // Remove any query parameters for consistency
+      const cleanUrl = url.split('?')[0];
+      
+      // Ensure it's using https
+      if (cleanUrl.startsWith('http://')) {
+        return cleanUrl.replace('http://', 'https://');
+      } else if (cleanUrl.startsWith('//')) {
+        return `https:${cleanUrl}`;
+      } else if (!cleanUrl.startsWith('http')) {
+        return `https://${cleanUrl}`;
+      }
+      return cleanUrl; // Already https
+    }
+
+    // If it's a relative path, convert to absolute URL
+    if (url.startsWith('/')) {
+      return `${window.location.origin}${url}`;
+    }
+
+    // If it's already a full URL, return as is
+    if (url.startsWith('http')) {
+      return url;
+    }
+
+    console.warn('Unhandled URL format in getDirectImageUrl:', url);
     return url;
+  } catch (error) {
+    console.error('Error processing image URL:', error, { url });
+    return '';
   }
-  
-  // If it's a Cloudinary URL, ensure it's using https
-  if (url.includes('cloudinary.com')) {
-    return url.replace('http://', 'https://');
-  }
-  
-  // For local development or other cases, return as is
-  return url;
 };
 
 /**

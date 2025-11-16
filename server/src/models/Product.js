@@ -6,7 +6,7 @@ const ProductSchema = new mongoose.Schema(
     description: { type: String },
     price: { type: Number, required: true },
     originalPrice: { type: Number },
-    image: { type: String },
+    images: [{ type: String }],
     category: { type: String, enum: ['everyday', 'luxe', 'limited-edition', 'customizable'], required: true },
     isBestseller: { type: Boolean, default: false },
     onSale: { type: Boolean, default: false },

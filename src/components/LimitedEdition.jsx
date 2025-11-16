@@ -45,7 +45,9 @@ const LimitedEdition = () => {
   }, []);
 
   const handleViewDetails = (product) => {
-    navigate(`/product/${product.id}`, {
+    // Normalize product ID - handle both _id (from API) and id (from static data)
+    const productId = product._id || product.id;
+    navigate(`/product/${productId}`, {
       state: { from: '/limited-edition', product },
     });
   };
@@ -97,9 +99,12 @@ const LimitedEdition = () => {
             gap: { xs: '8px', sm: '10px' },
           }}
         >
-          {products.map((product) => (
+          {products.map((product) => {
+            // Normalize product ID - handle both _id (from API) and id (from static data)
+            const productId = product._id || product.id;
+            return (
             <motion.div
-              key={product.id}
+              key={productId}
               className="relative group overflow-hidden shadow-lg"
               variants={{
                 hidden: { opacity: 0, y: 30 },
@@ -184,7 +189,8 @@ const LimitedEdition = () => {
                 </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </Box>
       </Container>
     </Box>

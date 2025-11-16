@@ -10,12 +10,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {/* Left: Brand and Social Links */}
           <div className="space-y-3 md:space-y-4">
-            <h2
-              className="text-xl md:text-2xl font-bold mb-2 md:mb-4"
-              style={{ fontFamily: "Marcellus SC, serif" }}
-            >
-              PrakriTee
-            </h2>
+            <div className="flex flex-col items-start">
+              <h2
+                className="text-xl md:text-2xl font-bold leading-none"
+                style={{ fontFamily: '"Nosifer", sans-serif', fontWeight: 400 }}
+              >
+                SLAY
+              </h2>
+              <span 
+                className="text-xs text-gray-300 -mt-0.5"
+                style={{ fontFamily: '"Zalando Sans Expanded", sans-serif', fontWeight: 300, fontStyle: 'italic', display: 'block' }}
+              >
+                a fashion tee brand
+              </span>
+            </div>
             <div className="flex space-x-4 md:space-x-6">
               <a
                 href="https://instagram.com"
@@ -95,7 +103,7 @@ export default function Footer() {
         {/* Bottom: Copyright */}
         <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-800">
           <div className="text-2xs md:text-xs text-center text-gray-500">
-            © {new Date().getFullYear()} PrakriTee. All rights reserved.
+            © {new Date().getFullYear()} SLAY. All rights reserved.
           </div>
         </div>
       </div>

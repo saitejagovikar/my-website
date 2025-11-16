@@ -15,7 +15,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'prakritee', // You can change this to your preferred folder name
+    folder: 'slay', // Folder for storing SLAY assets
     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto' }],
   },

@@ -46,9 +46,35 @@ export async function apiPut(path, body) {
 }
 
 export async function apiDelete(path) {
-  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error(`DELETE ${path} failed`);
+  const res = await fetch(`${API_BASE}${path}`, { 
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `DELETE ${path} failed with status ${res.status}`;
+    throw new Error(errorMessage);
+  }
   return true;
+}
+
+export async function uploadFile(path, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include'
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage = errorData.message || errorData.error || `File upload to ${path} failed with status ${res.status}`;
+    throw new Error(errorMessage);
+  }
+  
+  return res.json();
 }
 
 

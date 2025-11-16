@@ -57,7 +57,7 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-black to-gray-800 text-white py-20">
+      <div className="bg-gradient-to-br from-black to-gray-800 text-white pt-32 pb-20">
         <div className="max-w-6xl mx-auto px-8 text-center">
           <h1 
             className="text-5xl md:text-7xl font-bold mb-6"

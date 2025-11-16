@@ -82,7 +82,7 @@ export default function About() {
               </h2>
               <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
                 <p>
-                  Founded in 2020, PrakriTee began as a vision to create premium quality t-shirts that combine comfort, style, and sustainability. We believe that fashion should not only look good but also feel good and do good for the planet.
+                  Founded in 2020, SLAY began as a vision to create premium quality t-shirts that combine comfort, style, and sustainability. We believe that fashion should not only look good but also feel good and do good for the planet.
                 </p>
                 <p>
                   Our journey started with a simple idea: to create the perfect tee that you can wear every day, whether you're heading to work, meeting friends, or just relaxing at home. We source the finest cotton and work with skilled artisans to bring you designs that stand out.
@@ -188,7 +188,7 @@ export default function About() {
               >
                 EMAIL
               </h3>
-              <p className="text-gray-600">hello@prakritee.com</p>
+              <p className="text-gray-600">hello@slay.com</p>
             </div>
             <div>
               <h3 
