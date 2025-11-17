@@ -3,10 +3,10 @@ services:
     name: prakritee-backend
     env: node
     buildCommand: |
-      cd server
-      npm install --production=false
-      npm install -g npm@latest
-      npm install
+      # Make the build script executable
+      chmod +x server/render-build.sh
+      # Run the build script
+      ./server/render-build.sh
     startCommand: cd server && node src/index.js
     envVars:
       - key: NODE_ENV
