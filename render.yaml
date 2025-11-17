@@ -2,7 +2,11 @@ services:
   - type: web
     name: prakritee-backend
     env: node
-    buildCommand: cd server && npm install
+    buildCommand: |
+      cd server
+      npm install --production=false
+      npm install -g npm@latest
+      npm install
     startCommand: cd server && node src/index.js
     envVars:
       - key: NODE_ENV
