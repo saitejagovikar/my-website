@@ -7,14 +7,14 @@ function HeroBanner() {
 
   const images = [
     {
-      src: '/images/banner1.png',
+      src: '/client/public/images/banner1.png',
       alt: 'Hero Image 1',
       title: 'Welcome to SLAY',
       subtitle: 'Discover Amazing Products',
       textColor: 'text-black',
     },
     {
-      src: '/images/banner2.JPG',
+      src: '/client/public/images/banner2.JPG',
       alt: 'Hero Image 2',
       title: 'Premium Quality',
       subtitle: 'Shop with Confidence',

@@ -1,7 +1,12 @@
 // Centralized product data for reuse across components and routes
 
-// Helper to resolve public image paths (Vite serves from /public at root)
-const getImageUrl = (path) => (path && path.startsWith('/') ? path : `/${path}`);
+// Helper to resolve public image paths
+const getImageUrl = (path) => {
+  if (!path) return '';
+  // Remove leading slash if present and add the correct base path
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return `/client/public/images/${cleanPath}`;
+};
 
 export const products = [
   { 
@@ -67,12 +72,12 @@ export const products = [
 ];
 
 export const customizableProducts = [
-  { id: 101, name: "BLACK TEE", price: 799, originalPrice: 999, image: getImageUrl('/images/black.png'), category: "customizable", description: "Create unique designs with AI assistance", customizable: true },
-  { id: 102, name: "BLUE TEE", price: 699, originalPrice: 899, image: getImageUrl('/images/blue.png'), category: "customizable", description: "Upload your own images and designs", customizable: true },
-  { id: 103, name: "GREY TEE", price: 899, originalPrice: 1199, image: getImageUrl('/images/grey.png'), category: "customizable", description: "Full creative control with templates", customizable: true },
-  { id: 104, name: "WHITE TEE", price: 999, originalPrice: 1299, image: getImageUrl('/images/white.png'), category: "customizable", description: "Premium AI-powered artistic designs", customizable: true },
-  { id: 105, name: "CLASSIC TEE", price: 749, originalPrice: 949, image: getImageUrl('/images/black.png'), category: "customizable", description: "Custom typography and quotes", customizable: true },
-  { id: 106, name: "BARGANDI TEE", price: 849, originalPrice: 1099, image: getImageUrl('/images/bargandi.png'), category: "customizable", description: "Unique pattern and graphic designs", customizable: true },
+  { id: 101, name: "BLACK TEE", price: 799, originalPrice: 999, image: '/client/public/images/black.png', category: "customizable", description: "Create unique designs with AI assistance", customizable: true },
+  { id: 102, name: "BLUE TEE", price: 699, originalPrice: 899, image: '/client/public/images/blue.png', category: "customizable", description: "Upload your own images and designs", customizable: true },
+  { id: 103, name: "GREY TEE", price: 899, originalPrice: 1199, image: '/client/public/images/grey.png', category: "customizable", description: "Full creative control with templates", customizable: true },
+  { id: 104, name: "WHITE TEE", price: 999, originalPrice: 1299, image: '/client/public/images/white.png', category: "customizable", description: "Premium AI-powered artistic designs", customizable: true },
+  { id: 105, name: "CLASSIC TEE", price: 749, originalPrice: 949, image: '/client/public/images/black.png', category: "customizable", description: "Custom typography and quotes", customizable: true },
+  { id: 106, name: "BARGANDI TEE", price: 849, originalPrice: 1099, image: '/client/public/images/bargandi.png', category: "customizable", description: "Unique pattern and graphic designs", customizable: true },
 ];
 
 export const allProducts = [...products, ...customizableProducts];
