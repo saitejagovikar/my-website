@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const HeroBanner = () => {
+  const banners = [
+    '/images/banner1.png',
+    '/images/banner2.JPG'
+  ];
+  
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prevIndex) => (prevIndex + 1) % banners.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
   return (
     <Box 
       sx={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2940&q=80)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
         minHeight: '80vh',
         display: 'flex',
         alignItems: 'center',
@@ -17,8 +28,41 @@ const HeroBanner = () => {
         color: 'white',
         textAlign: 'center',
         position: 'relative',
-        '&::before': {
-          content: '""',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Banner Container with smooth scroll animation */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: `${banners.length * 100}%`,
+          height: '100%',
+          display: 'flex',
+          transition: 'transform 1s ease-in-out',
+          transform: `translateX(-${currentBannerIndex * (100 / banners.length)}%)`,
+          zIndex: 0,
+        }}
+      >
+        {banners.map((banner, index) => (
+          <Box
+            key={index}
+            sx={{
+              width: `${100 / banners.length}%`,
+              height: '100%',
+              backgroundImage: `url(${banner})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              flexShrink: 0,
+            }}
+          />
+        ))}
+      </Box>
+      {/* Overlay */}
+      <Box
+        sx={{
           position: 'absolute',
           top: 0,
           left: 0,
@@ -26,9 +70,8 @@ const HeroBanner = () => {
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
           zIndex: 1,
-        },
-      }}
-    >
+        }}
+      />
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, py: 8 }}>
         <Typography 
           variant="h2" 

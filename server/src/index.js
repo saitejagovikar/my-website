@@ -31,11 +31,25 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // CORS configuration
+const allowedOrigins = process.env.CORS_ORIGIN.split(',').map(origin => origin.trim());
+console.log('CORS allowed origins:', allowedOrigins);
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()),
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 
