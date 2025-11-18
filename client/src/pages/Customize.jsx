@@ -1,5 +1,6 @@
 // src/pages/Customize.jsx
 import React, { useState, useEffect } from 'react';
+import { apiPost } from '../api/client';
 
 export default function Customize({ product, onBack, onAddToCart, user }) {
   // Scroll to top when component mounts
@@ -123,13 +124,7 @@ export default function Customize({ product, onBack, onAddToCart, user }) {
     setDesignType("ai");
   
     try {
-      const res = await fetch("http://localhost:5000/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: customText })
-      });
-  
-      const data = await res.json();
+      const data = await apiPost("/api/generate-image", { prompt: customText });
       if (data.imageUrl) {
         setGeneratedDesign({
           id: Date.now(),

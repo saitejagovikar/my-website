@@ -1,17 +1,12 @@
-// Use environment variable or detect production
+// Use environment variable or Render backend
 const getApiBase = () => {
   // If VITE_API_BASE is set, use it (highest priority)
   if (import.meta.env.VITE_API_BASE) {
     return import.meta.env.VITE_API_BASE;
   }
   
-  // If running in production (on Vercel), use Render backend
-  if (import.meta.env.PROD || window.location.hostname.includes('vercel.app')) {
-    return 'https://my-website-xtht.onrender.com';
-  }
-  
-  // Default to localhost for development
-  return 'http://localhost:5001';
+  // Default to Render backend (works for both development and production)
+  return 'https://my-website-xtht.onrender.com';
 };
 
 const API_BASE = getApiBase();

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { apiPost, apiGet, apiPut, apiDelete } from '../api/client';
+import { apiPost, apiGet, apiPut, apiDelete, uploadFile } from '../api/client';
 import { getDirectImageUrl } from '../utils/imageUtils';
 
 // Helper function to format price
@@ -78,28 +78,19 @@ export default function Admin() {
       // Upload files sequentially
       for (let i = 0; i < filesArray.length; i++) {
         const file = filesArray[i];
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const response = await fetch('http://localhost:5001/api/upload/image', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || `Upload failed for ${file.name}`);
-        }
-
-        const data = await response.json();
-        const imageUrl = data.secure_url || data.imageUrl || data.url;
         
-        if (!imageUrl) {
-          throw new Error(`No image URL returned for ${file.name}`);
+        try {
+          const data = await uploadFile('/api/upload/image', file);
+          const imageUrl = data.imageUrl || data.secure_url || data.url;
+          
+          if (!imageUrl) {
+            throw new Error(`No image URL returned for ${file.name}`);
+          }
+
+          uploadedUrls.push(imageUrl);
+        } catch (error) {
+          throw new Error(error.message || `Upload failed for ${file.name}`);
         }
-        
-        uploadedUrls.push(imageUrl);
       }
       
       // Update the product with new image URLs
