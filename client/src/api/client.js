@@ -1,4 +1,20 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5001';
+// Use environment variable or detect production
+const getApiBase = () => {
+  // If VITE_API_BASE is set, use it (highest priority)
+  if (import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE;
+  }
+  
+  // If running in production (on Vercel), use Render backend
+  if (import.meta.env.PROD || window.location.hostname.includes('vercel.app')) {
+    return 'https://my-website-xtht.onrender.com';
+  }
+  
+  // Default to localhost for development
+  return 'http://localhost:5001';
+};
+
+const API_BASE = getApiBase();
 
 export async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`);

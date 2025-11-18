@@ -22,7 +22,7 @@ const PhotoBanner = () => {
             objectPosition: 'center center'
           }}
         >
-          <source src="/client/public/videos/banner.mp4" type="video/mp4" />
+          <source src="/videos/banner.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
