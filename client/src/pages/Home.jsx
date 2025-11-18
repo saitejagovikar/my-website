@@ -33,18 +33,21 @@ export default function Home({
         onCategoryChange={handleCategoryChange}
       />
       
-      {/* Conditionally render content based on active category */}
-      {activeCategory === 'luxe' ? (
-        <Luxe 
-          addToCart={addToCart} 
-          user={user}
-        />
-      ) : (
-        <ProductGrid 
-          addToCart={addToCart} 
-          user={user}
-        />
-      )}
+      {/* Products Section */}
+      <div id="products-section">
+        {/* Conditionally render content based on active category */}
+        {activeCategory === 'luxe' ? (
+          <Luxe 
+            addToCart={addToCart} 
+            user={user}
+          />
+        ) : (
+          <ProductGrid 
+            addToCart={addToCart} 
+            user={user}
+          />
+        )}
+      </div>
     </>
   );
 }

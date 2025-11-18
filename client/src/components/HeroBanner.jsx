@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const HeroBanner = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const banners = [
     '/images/banner1.png',
     '/images/banner2.JPG'
@@ -17,6 +19,26 @@ const HeroBanner = () => {
 
     return () => clearInterval(interval);
   }, [banners.length]);
+
+  const handleShopNow = (e) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      // If on home page, scroll to products section
+      const productsSection = document.getElementById('products-section');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      // If on different page, navigate to home and then scroll
+      navigate('/');
+      setTimeout(() => {
+        const productsSection = document.getElementById('products-section');
+        if (productsSection) {
+          productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  };
 
   return (
     <Box 
@@ -100,11 +122,10 @@ const HeroBanner = () => {
           Discover amazing products at unbeatable prices. Shop now and experience the difference.
         </Typography>
         <Button 
-          component={Link} 
-          to="/products" 
           variant="contained" 
           color="primary"
           size="large"
+          onClick={handleShopNow}
           sx={{
             px: 4,
             py: 1.5,
