@@ -88,7 +88,7 @@ export default function Customize({ product, onBack, onAddToCart, user }) {
   const [fontSize, setFontSize] = useState(24);
   const [fontWeight, setFontWeight] = useState('normal');
   const [selectedColor, setSelectedColor] = useState('white');
-  const [selectedTeeImage, setSelectedTeeImage] = useState('/client/public/images/white.png');
+  const [selectedTeeImage, setSelectedTeeImage] = useState('/images/white.png');
   const [selectedSize, setSelectedSize] = useState('M');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedDesign, setGeneratedDesign] = useState(null);
@@ -97,21 +97,21 @@ export default function Customize({ product, onBack, onAddToCart, user }) {
   const [designType, setDesignType] = useState('text'); // 'text', 'upload', 'template'
 
   const teeOptions = [
-    { name: 'Classic White', value: 'white', image: '/client/public/images/white.png' },
-    { name: 'Premium Black', value: 'black', image: '/client/public/images/black.png' },
-    { name: 'Ocean Blue', value: 'blue', image: '/client/public/images/blue.png' },
-    { name: 'Charcoal Grey', value: 'grey', image: '/client/public/images/grey.png' }
+    { name: 'Classic White', value: 'white', image: '/images/white.png' },
+    { name: 'Premium Black', value: 'black', image: '/images/black.png' },
+    { name: 'Ocean Blue', value: 'blue', image: '/images/blue.png' },
+    { name: 'Charcoal Grey', value: 'grey', image: '/images/grey.png' }
   ];
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const designTemplates = [
-    { id: 1, name: 'Beach Vibes', description: 'Tropical paradise', preview: '/client/public/images/beach.png' },
-    { id: 2, name: 'Bargandi Style', description: 'Traditional patterns', preview: '/client/public/images/bargandi.png' },
-    { id: 3, name: 'Minimalist', description: 'Clean and simple', preview: '/client/public/images/white.png' },
-    { id: 4, name: 'Vintage', description: 'Retro inspired', preview: '/client/public/images/grey.png' },
-    { id: 5, name: 'Geometric', description: 'Modern shapes', preview: '/client/public/images/blue.png' },
-    { id: 6, name: 'Abstract', description: 'Artistic patterns', preview: '/client/public/images/black.png' }
+    { id: 1, name: 'Beach Vibes', description: 'Tropical paradise', preview: '/images/beach.png' },
+    { id: 2, name: 'Bargandi Style', description: 'Traditional patterns', preview: '/images/bargandi.png' },
+    { id: 3, name: 'Minimalist', description: 'Clean and simple', preview: '/images/white.png' },
+    { id: 4, name: 'Vintage', description: 'Retro inspired', preview: '/images/grey.png' },
+    { id: 5, name: 'Geometric', description: 'Modern shapes', preview: '/images/blue.png' },
+    { id: 6, name: 'Abstract', description: 'Artistic patterns', preview: '/images/black.png' }
   ];
 
   const handleAIGenerate = async () => {

@@ -4,7 +4,7 @@ const products = [
     name: 'Classic T-Shirt',
     price: 19.99,
     category: 'clothing',
-    image: 'https://via.placeholder.com/300x300?text=Classic+T-Shirt',
+    image: '/images/black.png',
     rating: 4.3,
     reviews: 95,
     customizable: false
@@ -14,7 +14,7 @@ const products = [
     name: 'Basic Mug',
     price: 9.99,
     category: 'accessories',
-    image: 'https://via.placeholder.com/300x300?text=Basic+Mug',
+    image: '/images/black.png',
     rating: 4.0,
     reviews: 67,
     customizable: false
