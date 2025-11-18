@@ -186,50 +186,60 @@ export default function Login({ onLogin, user, onBack }) {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+          {/* Divider - Only show if Google login is available */}
+          {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
-            </div>
-          </div>
+          )}
 
-          {/* Google Login */}
-          <div className="flex justify-center">
-            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
-              <GoogleLogin
-                onSuccess={credentialResponse => {
-                  console.log('Google login successful:', credentialResponse);
-                  // Decode the JWT token to get user info
-                  try {
-                    const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-                    onLogin({ 
-                      name: decoded.name, 
-                      email: decoded.email,
-                      picture: decoded.picture
-                    });
-                    setShowSuccess(true);
-                    setTimeout(() => navigate('/'), 1200);
-                  } catch (error) {
-                    console.error('Error decoding Google token:', error);
-                  }
-                }}
-                onError={() => {
-                  console.log('Google login failed');
-                }}
-                useOneTap
-                auto_select
-                theme="outline"
-                size="large"
-                text="continue_with"
-                shape="rectangular"
-                logo_alignment="left"
-                width="100%"
-              />
-            </GoogleOAuthProvider>
-          </div>
+          {/* Google Login - Only show if client ID is configured */}
+          {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            <div className="flex justify-center">
+              <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+                <GoogleLogin
+                  onSuccess={credentialResponse => {
+                    console.log('Google login successful:', credentialResponse);
+                    // Decode the JWT token to get user info
+                    try {
+                      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+                      onLogin({ 
+                        name: decoded.name, 
+                        email: decoded.email,
+                        picture: decoded.picture
+                      });
+                      setShowSuccess(true);
+                      setTimeout(() => navigate('/'), 1200);
+                    } catch (error) {
+                      console.error('Error decoding Google token:', error);
+                      setError('Failed to process Google login. Please try again.');
+                    }
+                  }}
+                  onError={() => {
+                    console.log('Google login failed');
+                    setError('Google login failed. Please try again or use email/password.');
+                  }}
+                  useOneTap={false}
+                  auto_select={false}
+                  theme="outline"
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                  logo_alignment="left"
+                  width="100%"
+                />
+              </GoogleOAuthProvider>
+            </div>
+          ) : (
+            <div className="text-center text-sm text-gray-500 py-2">
+              Google login is not configured. Please use email/password to sign in.
+            </div>
+          )}
 
           {/* Toggle */}
           <div className="mt-6 text-center">
