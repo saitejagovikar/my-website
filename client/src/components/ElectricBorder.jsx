@@ -91,7 +91,7 @@ const ElectricBorder = ({
       <div className="electric-border__content">
         {children}
       </div>
-      <style jsx>{`
+      <style>{`
         @property --gradient-angle {
           syntax: '<angle>';
           initial-value: 0deg;
