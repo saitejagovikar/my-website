@@ -6,8 +6,6 @@ import { fileURLToPath, URL } from 'url'
 export default defineConfig({
   plugins: [react()],
   base: '/',
-  root: './client',
-  publicDir: '../public',
   server: {
     host: '0.0.0.0',
     port: 5173,
@@ -18,9 +16,6 @@ export default defineConfig({
     emptyOutDir: true,
     assetsDir: 'assets',
     rollupOptions: {
-      input: {
-        main: fileURLToPath(new URL('./client/index.html', import.meta.url))
-      },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -34,7 +29,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./client/src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   }
 })
