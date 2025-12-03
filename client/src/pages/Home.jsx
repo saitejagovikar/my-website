@@ -1,19 +1,19 @@
 // src/pages/Home.jsx
 import React, { useState } from 'react';
-import HeroBanner from '../components/HeroBanner.jsx';
-import ScrollingBanner from '../components/ScrollingBanner.jsx';
-import CategoryTabs from '../components/CategoryTabs.jsx';
-import ProductGrid from '../components/ProductsGrid.jsx';
+import HeroBanner from '../components/banners/HeroBanner.jsx';
+import ScrollingBanner from '../components/banners/ScrollingBanner.jsx';
+import CategoryTabs from '../components/products/CategoryTabs.jsx';
+import ProductGrid from '../components/products/ProductsGrid.jsx';
 import Luxe from './Luxe.jsx';
 
-export default function Home({ 
-  addToCart, 
-  onViewProduct, 
+export default function Home({
+  addToCart,
+  onViewProduct,
   onCustomize,
-  user 
+  user
 }) {
   const [activeCategory, setActiveCategory] = useState('everyday');
-  
+
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
   };
@@ -28,22 +28,22 @@ export default function Home({
       </div>
 
       {/* Category Tabs */}
-      <CategoryTabs 
+      <CategoryTabs
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
       />
-      
+
       {/* Products Section */}
       <div id="products-section">
         {/* Conditionally render content based on active category */}
         {activeCategory === 'luxe' ? (
-          <Luxe 
-            addToCart={addToCart} 
+          <Luxe
+            addToCart={addToCart}
             user={user}
           />
         ) : (
-          <ProductGrid 
-            addToCart={addToCart} 
+          <ProductGrid
+            addToCart={addToCart}
             user={user}
           />
         )}

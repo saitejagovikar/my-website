@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams, useNavigate, useLocation } from 'react-router-dom';
 
-import Navbar from './components/Navbar.jsx';
-import Footer from './components/Footer.jsx';
-import ScrollToTop from './components/ScrollToTop';
+import Navbar from './components/layout/Navbar.jsx';
+import Footer from './components/layout/Footer.jsx';
+import ScrollToTop from './components/common/ScrollToTop';
 import Home from './pages/Home.jsx';
 import Explore from './pages/Explore.jsx';
 import About from './pages/About.jsx';
@@ -15,7 +15,7 @@ import LoginPage from './pages/Login.jsx';
 import ProfilePage from './pages/Profile.jsx';
 import Checkout from './pages/Checkout.jsx';
 import OrderDetail from './pages/OrderDetail.jsx';
-import AnnouncementBanner from './components/AnnouncementBanner';
+import AnnouncementBanner from './components/banners/AnnouncementBanner';
 import AdminPage from './pages/Admin.jsx';
 import { apiGet } from './api/client';
 
@@ -25,7 +25,7 @@ function AppContent() {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
-  
+
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('cart');
@@ -43,7 +43,7 @@ function AppContent() {
         image: product.image,
         size: product.size,
         quantity: product.quantity || 1,
-        customizations: product.customizations ? { 
+        customizations: product.customizations ? {
           ...product.customizations,
           // Ensure we're not storing any React components or functions
           design: product.customizations.design ? {
@@ -61,15 +61,15 @@ function AppContent() {
       const existingIndex = prev.findIndex(item => {
         const sameId = item.id === cleanProduct.id;
         const sameSize = item.size === cleanProduct.size;
-        const sameCustomizations = !item.customizations && !cleanProduct.customizations || 
-          (item.customizations && cleanProduct.customizations && 
-           JSON.stringify(item.customizations) === JSON.stringify(cleanProduct.customizations));
-        
+        const sameCustomizations = !item.customizations && !cleanProduct.customizations ||
+          (item.customizations && cleanProduct.customizations &&
+            JSON.stringify(item.customizations) === JSON.stringify(cleanProduct.customizations));
+
         return sameId && sameSize && sameCustomizations;
       });
 
       let updated = [...prev];
-      
+
       if (existingIndex >= 0) {
         // If it exists, update the quantity
         const existing = updated[existingIndex];
@@ -105,17 +105,17 @@ function AppContent() {
       removeFromCart(productId, size);
       return;
     }
-    
+
     setCart(prev => {
       const updated = prev.map(item => {
         // Match by both id and size if size is provided, otherwise just by id
-        const isMatch = size !== null 
+        const isMatch = size !== null
           ? (item.id === productId && item.size === size)
           : (item.id === productId);
-          
+
         return isMatch ? { ...item, quantity } : item;
       });
-      
+
       localStorage.setItem('cart', JSON.stringify(updated));
       return updated;
     });
@@ -127,7 +127,7 @@ function AppContent() {
     localStorage.setItem('user', JSON.stringify(userWithId));
     setUser(userWithId);
   };
-  
+
   const handleCheckout = () => {
     if (!user) {
       alert("Please login to proceed to checkout");
@@ -149,20 +149,20 @@ function AppContent() {
     const location = useLocation();
     const navigate = useNavigate();
     const isHome = location.pathname === '/';
-    
+
     // If onViewProduct is a function that returns a function (like handleViewProduct),
     // call it with navigate and use the result as the new onViewProduct
     const enhancedChildren = React.Children.map(children, child => {
       if (React.isValidElement(child)) {
         return React.cloneElement(child, {
-          onViewProduct: typeof child.props.onViewProduct === 'function' ? 
-            child.props.onViewProduct(navigate) : 
+          onViewProduct: typeof child.props.onViewProduct === 'function' ?
+            child.props.onViewProduct(navigate) :
             child.props.onViewProduct
         });
       }
       return child;
     });
-    
+
     return (
       <div className="min-h-screen flex flex-col">
         <div className="relative z-50">
@@ -200,14 +200,14 @@ function AppContent() {
         {/* Public routes with layout */}
         <Route path="/" element={
           <Layout>
-            <Home 
-              addToCart={addToCart} 
-              user={user} 
+            <Home
+              addToCart={addToCart}
+              user={user}
               onViewProduct={handleViewProduct}
             />
           </Layout>
         } />
-        
+
         <Route path="/explore" element={
           <Layout>
             <Explore products={allProducts} onAddToCart={addToCart} user={user} />
@@ -240,19 +240,19 @@ function AppContent() {
 
         {/* Pages without layout */}
         <Route path="/login" element={
-          <LoginPage 
-            onLogin={handleLogin} 
+          <LoginPage
+            onLogin={handleLogin}
             onBack={() => window.history.back()}
             user={user}
           />
         } />
 
         <Route path="/cart" element={
-          <Cart 
-            cart={cart} 
-            updateCartQuantity={updateCartQuantity} 
-            removeFromCart={removeFromCart} 
-            user={user} 
+          <Cart
+            cart={cart}
+            updateCartQuantity={updateCartQuantity}
+            removeFromCart={removeFromCart}
+            user={user}
             onCheckout={handleCheckout}
           />
         } />
@@ -291,7 +291,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchProduct = async () => {
       // Include Limited Edition products
       const limitedEditionProducts = [
@@ -333,7 +333,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
 
       // Combine regular products with limited edition products
       const allProducts = [...products, ...limitedEditionProducts];
-      
+
       // First, try to find in static products (check both id and _id)
       let foundProduct = allProducts.find(p => {
         const productId = p._id || p.id;
@@ -369,7 +369,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
     };
 
     fetchProduct();
-    
+
     return () => { isMounted = false; };
   }, [id, products]);
 
@@ -388,7 +388,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="mb-4">Product with ID {id} not found.</p>
-          <button 
+          <button
             className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
             onClick={() => navigate(-1)}
           >
@@ -401,8 +401,8 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProductDetail 
-        product={product} 
+      <ProductDetail
+        product={product}
         onBack={() => navigate(-1)}
         onAddToCart={onAddToCart}
         user={user}
@@ -422,7 +422,7 @@ function CustomizeWrapper({ products, onAddToCart, user }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="mb-4">Product not found.</p>
-          <button 
+          <button
             className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
             onClick={() => navigate(-1)}
           >
@@ -434,11 +434,11 @@ function CustomizeWrapper({ products, onAddToCart, user }) {
   }
 
   return (
-    <Customize 
-      product={product} 
-      onBack={() => navigate(-1)} 
-      onAddToCart={onAddToCart} 
-      user={user} 
+    <Customize
+      product={product}
+      onBack={() => navigate(-1)}
+      onAddToCart={onAddToCart}
+      user={user}
     />
   );
 }

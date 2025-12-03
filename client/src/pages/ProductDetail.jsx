@@ -1,7 +1,7 @@
 // src/pages/ProductDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddToCartButton from '../components/AddToCartButton';
+import AddToCartButton from '../components/products/AddToCartButton';
 import { getDirectImageUrl } from '../utils/imageUtils';
 
 export default function ProductDetail({ product, onBack, onAddToCart, user }) {
@@ -16,17 +16,17 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
   const [sizeError, setSizeError] = useState('');
 
   // Get all available images (from images array or single image)
-  const allImages = product.images && product.images.length > 0 
-    ? product.images 
-    : product.image 
-      ? [product.image] 
+  const allImages = product.images && product.images.length > 0
+    ? product.images
+    : product.image
+      ? [product.image]
       : [];
-      
+
   // Current selected image index
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Current product image being displayed
-  const productImage = allImages.length > 0 
+  const productImage = allImages.length > 0
     ? getDirectImageUrl(allImages[currentImageIndex])
     : '/images/black.png'; // fallback image
 
@@ -39,18 +39,18 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
       alert('Please login to add items to cart');
       return;
     }
-    
+
     if (!selectedSize) {
       setSizeError('Please select a size');
       return;
     }
-    
+
     const itemToAdd = {
       ...product,
       size: selectedSize,
       quantity: quantity
     };
-    
+
     onAddToCart(itemToAdd);
   };
 
@@ -61,18 +61,18 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
       alert('Please login to proceed with checkout');
       return;
     }
-    
+
     if (!selectedSize) {
       setSizeError('Please select a size');
       return;
     }
-    
+
     const itemToCheckout = {
       ...product,
       size: selectedSize,
       quantity: quantity
     };
-    
+
     onAddToCart(itemToCheckout);
     navigate('/checkout');
   };
@@ -105,14 +105,13 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex 
-                          ? 'border-black' 
+                      className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${index === currentImageIndex
+                          ? 'border-black'
                           : 'border-transparent hover:border-gray-300'
-                      }`}
+                        }`}
                     >
-                      <img 
-                        src={getDirectImageUrl(img)} 
+                      <img
+                        src={getDirectImageUrl(img)}
                         alt={`${product.name} - ${index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -123,17 +122,16 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                   ))}
                 </div>
               )}
-              
+
               {/* Main Image */}
               <div className="flex-1">
-                <div 
-                  className={`relative aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
-                    isZoomed ? 'scale-110' : 'hover:scale-105'
-                  }`}
+                <div
+                  className={`relative aspect-[4/5] bg-gray-200 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${isZoomed ? 'scale-110' : 'hover:scale-105'
+                    }`}
                   onClick={handleImageClick}
                 >
-                  <img 
-                    src={productImage} 
+                  <img
+                    src={productImage}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     onLoad={(e) => {
@@ -153,10 +151,10 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute top-4 right-4 bg-white/90 text-black px-2 py-1 rounded-full text-xs font-semibold">
-                    {product.category === 'luxe' || product.category === 'luxury' 
-                      ? 'LUXE' 
-                      : product.category === 'limited-edition' 
-                        ? 'LIMITED EDITION' 
+                    {product.category === 'luxe' || product.category === 'luxury'
+                      ? 'LUXE'
+                      : product.category === 'limited-edition'
+                        ? 'LIMITED EDITION'
                         : 'EVERYDAY'}
                   </div>
                   {isZoomed && (
@@ -172,7 +170,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
           {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <h1 
+              <h1
                 className="text-3xl md:text-4xl font-bold text-black mb-2"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
@@ -183,7 +181,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
 
             {/* Price */}
             <div className="flex items-center space-x-4">
-              <span 
+              <span
                 className="text-3xl font-bold text-black"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
@@ -191,7 +189,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
               </span>
               {product.originalPrice && (
                 <>
-                  <span 
+                  <span
                     className="text-xl text-gray-400 line-through"
                     style={{ fontFamily: 'Marcellus SC, serif' }}
                   >
@@ -206,7 +204,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
 
             {/* Product Features */}
             <div className="space-y-3">
-              <h3 
+              <h3
                 className="text-lg font-semibold text-black"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
@@ -248,7 +246,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
 
             {/* Size Selection */}
             <div>
-              <h3 
+              <h3
                 className="text-lg font-semibold text-black mb-3"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
@@ -263,11 +261,10 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                         setSelectedSize(size);
                         setSizeError('');
                       }}
-                      className={`w-12 h-12 border rounded-lg transition-colors flex items-center justify-center ${
-                        selectedSize === size 
-                          ? 'bg-black text-white border-black' 
+                      className={`w-12 h-12 border rounded-lg transition-colors flex items-center justify-center ${selectedSize === size
+                          ? 'bg-black text-white border-black'
                           : 'border-gray-300 hover:border-black'
-                      }`}
+                        }`}
                     >
                       {size}
                     </button>
@@ -282,13 +279,13 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
             {/* Action Buttons */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <h3 
+                <h3
                   className="text-lg font-semibold text-black"
                   style={{ fontFamily: 'Marcellus SC, serif' }}
                 >
                   Quantity
                 </h3>
-                <AddToCartButton 
+                <AddToCartButton
                   onClick={handleAddToCart}
                   className={`w-full py-4 ${!selectedSize ? 'opacity-70 cursor-not-allowed' : ''}`}
                   showQuantity={true}
@@ -301,11 +298,10 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
               <button
                 onClick={handleCheckout}
                 disabled={!selectedSize}
-                className={`w-full py-4 rounded-xl font-medium transition-colors ${
-                  selectedSize 
-                    ? 'bg-black text-white hover:bg-gray-800' 
+                className={`w-full py-4 rounded-xl font-medium transition-colors ${selectedSize
+                    ? 'bg-black text-white hover:bg-gray-800'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
                 {selectedSize ? 'BUY NOW' : 'SELECT SIZE'}
@@ -314,7 +310,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
 
             {/* Shipping Info */}
             <div className="bg-gray-100 rounded-xl p-4">
-              <h4 
+              <h4
                 className="font-semibold text-black mb-2"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >

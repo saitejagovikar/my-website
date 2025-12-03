@@ -544,7 +544,21 @@ export default function Admin() {
                   {filteredProducts.map((p) => (
                     <tr key={p._id} className="border-b last:border-0">
                       <td className="px-4 py-3">
-                        {p.image ? (
+                        {p.images?.length > 0 ? (
+                          <img 
+                            src={getDirectImageUrl(p.images[0])} 
+                            alt={p.name} 
+                            className="w-12 h-12 object-cover rounded" 
+                            onError={(e) => {
+                              // Fallback to the original URL if the direct URL fails
+                              if (e.target.src !== p.images[0]) {
+                                e.target.src = p.images[0];
+                              } else {
+                                e.target.style.display = 'none';
+                              }
+                            }}
+                          />
+                        ) : p.image ? (
                           <img 
                             src={getDirectImageUrl(p.image)} 
                             alt={p.name} 

@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/announcement-banner.css';
+import '../../styles/announcement-banner.css';
 
 function AnnouncementBanner() {
   const text = '🎉 New Year Offer: Get 20% off on all products! Limited time only. 🎉';

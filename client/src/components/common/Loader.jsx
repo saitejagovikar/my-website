@@ -1,6 +1,6 @@
 // src/components/Loader.jsx
 import React, { useEffect, useState } from 'react';
-import '../styles/Loader.css';
+import '../../styles/Loader.css';
 
 export default function Loader({ onComplete }) {
   const [progress, setProgress] = useState(0);

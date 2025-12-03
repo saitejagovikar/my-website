@@ -99,10 +99,12 @@ function Navbar({ cartCount = 0, user, onLogout }) {
           <div className="relative" ref={profileRef}>
             <button 
               onClick={handleProfileClick}
-              className="p-3 text-white flex items-center text-lg"
+              className="p-3 text-white flex items-center text-lg hover:text-gray-300 transition-colors"
             >
               <FiUser className="h-6 w-6" />
-              <span className="hidden sm:inline ml-2">{user ? 'Profile' : 'Login'}</span>
+              <span className="hidden sm:inline ml-2 font-medium tracking-wide" style={{ fontFamily: '"Marcellus SC", serif' }}>
+                {user ? 'PROFILE' : 'LOGIN'}
+              </span>
             </button>
 
             {user && isProfileOpen && (
