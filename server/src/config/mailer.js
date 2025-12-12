@@ -11,14 +11,20 @@ export const mailer = nodemailer.createTransport({
   }
 });
 
-// Verify transporter configuration
-mailer.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email service error:', error);
-  } else {
-    console.log('✅ Email service ready');
-  }
-});
+// Verify transporter configuration (non-blocking)
+// Only verify if email credentials are provided
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  mailer.verify((error, success) => {
+    if (error) {
+      console.warn('⚠️  Email service error:', error.message);
+      console.warn('Email notifications will not be sent. Please check EMAIL_USER and EMAIL_PASS environment variables.');
+    } else {
+      console.log('✅ Email service ready');
+    }
+  });
+} else {
+  console.warn('⚠️  Email credentials not configured. Email notifications will be disabled.');
+}
 
 /**
  * Send OTP email to user
