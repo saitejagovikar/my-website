@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
+    "ogl": "^1.0.11",
     "openai": "^6.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

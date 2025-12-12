@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { apiPost } from '../../api/client';
 import ForgotPasswordModal from '../../components/auth/ForgotPasswordModal';
+import Particles from '../../components/effects/Particles';
 
 export default function Login({ onLogin, user, onBack }) {
   const navigate = useNavigate();
@@ -156,7 +157,20 @@ export default function Login({ onLogin, user, onBack }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8 relative">
+    <div className="min-h-screen bg-black py-8 relative">
+      {/* Particles Background */}
+      <div className="fixed inset-0 z-0">
+        <Particles
+          particleColors={['#ffffff', '#ffffff']}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={100}
+          moveParticlesOnHover={true}
+          alphaParticles={false}
+          disableRotation={false}
+        />
+      </div>
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 text-center transform transition-all duration-300 scale-100">
@@ -171,22 +185,22 @@ export default function Login({ onLogin, user, onBack }) {
         </div>
       )}
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-gray-600 hover:text-gray-800">
+          <button onClick={onBack} className="text-white hover:text-gray-300">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <h2 className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Marcellus SC, serif' }}>
+          <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Marcellus SC, serif' }}>
             {isLogin ? 'Welcome to SLAY' : 'Sign Up'}
           </h2>
           <div className="w-6"></div> {/* Spacer */}
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 p-8">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -195,7 +209,7 @@ export default function Login({ onLogin, user, onBack }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Full Name</label>
+                <label htmlFor="name" className="block text-sm font-medium text-white mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Full Name</label>
                 <input
                   type="text"
                   id="name"
@@ -203,14 +217,14 @@ export default function Login({ onLogin, user, onBack }) {
                   value={formData.name}
                   onChange={handleInputChange}
                   required={!isLogin}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-white/50"
                   placeholder="Enter your full name"
                 />
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Email Address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-white mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Email Address</label>
               <input
                 type="email"
                 id="email"
@@ -218,13 +232,13 @@ export default function Login({ onLogin, user, onBack }) {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-white/50"
                 placeholder="Enter your email"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-white mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Password</label>
               <input
                 type="password"
                 id="password"
@@ -232,7 +246,7 @@ export default function Login({ onLogin, user, onBack }) {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-white/50"
                 placeholder="Enter your password"
               />
               {isLogin && (
@@ -240,7 +254,7 @@ export default function Login({ onLogin, user, onBack }) {
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    className="text-sm text-white/70 hover:text-white transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -250,7 +264,7 @@ export default function Login({ onLogin, user, onBack }) {
 
             {!isLogin && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Confirm Password</label>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -258,7 +272,7 @@ export default function Login({ onLogin, user, onBack }) {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required={!isLogin}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-200 placeholder-white/50"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -267,7 +281,7 @@ export default function Login({ onLogin, user, onBack }) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-black text-white py-4 rounded-xl hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-black py-4 rounded-xl hover:bg-white/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Marcellus SC, serif' }}
             >
               {isLoading ? 'Please wait...' : (isLogin ? 'SIGN IN' : 'CREATE ACCOUNT')}
@@ -278,10 +292,10 @@ export default function Login({ onLogin, user, onBack }) {
           {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+                <div className="w-full border-t border-white/20"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or continue with</span>
+                <span className="px-4 bg-black text-white/70">Or continue with</span>
               </div>
             </div>
           )}
@@ -327,19 +341,19 @@ export default function Login({ onLogin, user, onBack }) {
 
           {/* Toggle */}
           <div className="mt-6 text-center">
-            <p className="text-gray-600">{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
+            <p className="text-white/70">{isLogin ? "Don't have an account?" : "Already have an account?"}</p>
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-blue-600 font-medium hover:text-gray-600 transition-colors mt-1"
+              className="text-blue-500 font-medium hover:text-blue-400 transition-colors mt-1"
               style={{ fontFamily: 'Marcellus SC, serif' }}
             >
               {isLogin ? 'Sign up here' : 'Sign in here'}
             </button>
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-gray-600">Admin access</p>
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <p className="text-white/70">Admin access</p>
               <button
                 onClick={() => setShowAdminModal(true)}
-                className="text-blue-600 font-medium hover:text-gray-600 transition-colors mt-1"
+                className="text-blue-500 font-medium hover:text-blue-400 transition-colors mt-1"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
                 Admin Panel Login
