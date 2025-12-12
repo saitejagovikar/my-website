@@ -1,15 +1,23 @@
 // src/pages/Login.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { apiPost } from '../api/client';
+import { apiPost } from '../../api/client';
+import ForgotPasswordModal from '../../components/auth/ForgotPasswordModal';
 
 export default function Login({ onLogin, user, onBack }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [adminFormData, setAdminFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,7 +27,13 @@ export default function Login({ onLogin, user, onBack }) {
 
   useEffect(() => {
     if (user) navigate('/', { replace: true }); // Redirect if already logged in
-  }, [user, navigate]);
+
+    // Check if redirected from forgot password for signup
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') {
+      setIsLogin(false);
+    }
+  }, [user, navigate, searchParams]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,14 +52,18 @@ export default function Login({ onLogin, user, onBack }) {
           setIsLoading(false);
           return;
         }
-        
+
         // Login API call
-        const userData = await apiPost('/api/user/login', {
+        const response = await apiPost('/api/user/login', {
           email: formData.email,
           password: formData.password,
         });
-        
-        onLogin(userData);
+
+        // Store token and user separately
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        onLogin(response.user);
         setShowSuccess(true);
         setTimeout(() => navigate('/'), 1200);
       } else {
@@ -59,20 +77,79 @@ export default function Login({ onLogin, user, onBack }) {
           setIsLoading(false);
           return;
         }
-        
+
         // Register API call
-        const userData = await apiPost('/api/user/register', {
+        const response = await apiPost('/api/user/register', {
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
-        
-        onLogin(userData);
+
+        // Store token and user separately
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        onLogin(response.user);
         setShowSuccess(true);
         setTimeout(() => navigate('/'), 1200);
       }
     } catch (error) {
-      setError(error.message || 'An error occurred. Please try again.');
+      // Check if it's an unregistered email error during login
+      if (isLogin && error.message && error.message.includes('not registered')) {
+        setError(
+          <div>
+            <p className="mb-2">{error.message}</p>
+            <button
+              onClick={() => setIsLogin(false)}
+              className="text-blue-600 hover:text-blue-700 font-medium underline"
+            >
+              Sign up here
+            </button>
+          </div>
+        );
+      } else {
+        setError(error.message || 'An error occurred. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (!adminFormData.email || !adminFormData.password) {
+        setError('Please enter email and password');
+        setIsLoading(false);
+        return;
+      }
+
+      // Admin login API call
+      const response = await apiPost('/api/user/login', {
+        email: adminFormData.email,
+        password: adminFormData.password,
+      });
+
+      // Check if user is admin
+      if (response.user.role !== 'admin') {
+        setError('Access denied. Admin privileges required.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Store token and user
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+
+      onLogin(response.user);
+      setShowAdminModal(false);
+      setShowSuccess(true);
+      setTimeout(() => navigate('/admin'), 1200);
+    } catch (error) {
+      setError(error.message || 'Invalid credentials');
     } finally {
       setIsLoading(false);
     }
@@ -158,6 +235,17 @@ export default function Login({ onLogin, user, onBack }) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200"
                 placeholder="Enter your password"
               />
+              {isLogin && (
+                <div className="text-right mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
@@ -188,56 +276,52 @@ export default function Login({ onLogin, user, onBack }) {
 
           {/* Divider - Only show if Google login is available */}
           {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
-            <div className="relative my-6">
+            <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-4 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
           )}
 
           {/* Google Login - Only show if client ID is configured */}
-          {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+          {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
             <div className="flex justify-center">
               <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
                 <GoogleLogin
-                  onSuccess={credentialResponse => {
-                    console.log('Google login successful:', credentialResponse);
-                    // Decode the JWT token to get user info
+                  onSuccess={async (credentialResponse) => {
+                    setIsLoading(true);
+                    setError('');
                     try {
-                      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-                      onLogin({ 
-                        name: decoded.name, 
-                        email: decoded.email,
-                        picture: decoded.picture
+                      // Send credential to backend for verification
+                      const response = await apiPost('/api/user/google-login', {
+                        credential: credentialResponse.credential,
                       });
+
+                      // Store token and user
+                      localStorage.setItem('token', response.token);
+                      localStorage.setItem('user', JSON.stringify(response.user));
+
+                      onLogin(response.user);
                       setShowSuccess(true);
                       setTimeout(() => navigate('/'), 1200);
                     } catch (error) {
-                      console.error('Error decoding Google token:', error);
-                      setError('Failed to process Google login. Please try again.');
+                      setError(error.message || 'Google login failed');
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
                   onError={() => {
-                    console.log('Google login failed');
-                    setError('Google login failed. Please try again or use email/password.');
+                    setError('Google login failed');
                   }}
                   useOneTap={false}
-                  auto_select={false}
-                  theme="outline"
-                  size="large"
-                  text="continue_with"
                   shape="rectangular"
                   logo_alignment="left"
                   width="100%"
                 />
               </GoogleOAuthProvider>
-            </div>
-          ) : (
-            <div className="text-center text-sm text-gray-500 py-2">
-              Google login is not configured. Please use email/password to sign in.
             </div>
           )}
 
@@ -254,16 +338,117 @@ export default function Login({ onLogin, user, onBack }) {
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-gray-600">Admin access</p>
               <button
-                onClick={() => navigate('/admin')}
+                onClick={() => setShowAdminModal(true)}
                 className="text-blue-600 font-medium hover:text-gray-600 transition-colors mt-1"
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >
-                Go to Admin Panel
+                Admin Panel Login
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Admin Login Modal */}
+      {showAdminModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowAdminModal(false);
+                setError('');
+                setAdminFormData({ email: '', password: '' });
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Modal Header */}
+            <div className="text-center mb-6">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Marcellus SC, serif' }}>
+                Admin Login
+              </h2>
+              <p className="text-sm text-gray-600 mt-2">Enter your admin credentials</p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Admin Login Form */}
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div>
+                <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Email
+                </label>
+                <input
+                  type="email"
+                  id="admin-email"
+                  value={adminFormData.email}
+                  onChange={(e) => {
+                    setAdminFormData({ ...adminFormData, email: e.target.value });
+                    setError('');
+                  }}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="admin@slay.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="admin-password"
+                  value={adminFormData.password}
+                  onChange={(e) => {
+                    setAdminFormData({ ...adminFormData, password: e.target.value });
+                    setError('');
+                  }}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter admin password"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Logging in...' : 'Login as Admin'}
+              </button>
+            </form>
+
+            {/* Admin Credentials Hint */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-gray-600">
+              <p className="font-semibold mb-1">Default Admin Credentials:</p>
+              <p>Email: admin@slay.com</p>
+              <p>Password: admin123</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 }

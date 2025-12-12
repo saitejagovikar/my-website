@@ -1,8 +1,8 @@
 // src/pages/ProductDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddToCartButton from '../components/products/AddToCartButton';
-import { getDirectImageUrl } from '../utils/imageUtils';
+import AddToCartButton from '../../components/products/AddToCartButton';
+import { getDirectImageUrl } from '../../utils/imageUtils';
 
 export default function ProductDetail({ product, onBack, onAddToCart, user }) {
   // Scroll to top when component mounts
@@ -106,8 +106,8 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
                       className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all ${index === currentImageIndex
-                          ? 'border-black'
-                          : 'border-transparent hover:border-gray-300'
+                        ? 'border-black'
+                        : 'border-transparent hover:border-gray-300'
                         }`}
                     >
                       <img
@@ -133,6 +133,8 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                   <img
                     src={productImage}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                     onLoad={(e) => {
                       e.target.style.opacity = '1';
@@ -196,7 +198,7 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                     ₹{product.originalPrice}
                   </span>
                   <span className="text-sm bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                    Save ₹{product.originalPrice - product.price}
+                    Save ₹{Math.round(product.originalPrice - product.price)}
                   </span>
                 </>
               )}
@@ -262,8 +264,8 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                         setSizeError('');
                       }}
                       className={`w-12 h-12 border rounded-lg transition-colors flex items-center justify-center ${selectedSize === size
-                          ? 'bg-black text-white border-black'
-                          : 'border-gray-300 hover:border-black'
+                        ? 'bg-black text-white border-black'
+                        : 'border-gray-300 hover:border-black'
                         }`}
                     >
                       {size}
@@ -299,8 +301,8 @@ export default function ProductDetail({ product, onBack, onAddToCart, user }) {
                 onClick={handleCheckout}
                 disabled={!selectedSize}
                 className={`w-full py-4 rounded-xl font-medium transition-colors ${selectedSize
-                    ? 'bg-black text-white hover:bg-gray-800'
-                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  ? 'bg-black text-white hover:bg-gray-800'
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   }`}
                 style={{ fontFamily: 'Marcellus SC, serif' }}
               >

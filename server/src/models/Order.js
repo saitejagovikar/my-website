@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const OrderSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    orderNumber: { type: String, unique: true, required: true },
+    orderNumber: { type: String, unique: true },
     items: [
       {
         productId: { type: String, required: true },
@@ -55,7 +55,7 @@ const OrderSchema = new mongoose.Schema(
 );
 
 // Generate unique order number before saving
-OrderSchema.pre('save', async function(next) {
+OrderSchema.pre('save', async function (next) {
   if (!this.orderNumber) {
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();

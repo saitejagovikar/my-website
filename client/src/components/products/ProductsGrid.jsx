@@ -61,6 +61,8 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
             <img
               src={product.images?.[0] || product.image}
               alt={product.name}
+              loading="lazy"
+              decoding="async"
               className="object-cover w-full h-full"
               onLoad={(e) => {
                 e.target.style.opacity = '1';
@@ -153,14 +155,15 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
 
           {/* LOADING MESSAGE */}
           {loading && !error && (
-            <div className="w-full text-center py-4 mb-6 text-gray-600">
-              Loading products…
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading products...</p>
             </div>
           )}
 
           {/* PRODUCT GRID */}
           {!loading && !error && (
-            <motion.div 
+            <motion.div
               className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8"
               initial="hidden"
               animate={!loading && !error ? "show" : "hidden"}
@@ -180,11 +183,11 @@ function ProductGrid({ addToCart, onViewProduct, onCustomize, user }) {
                   key={product._id || product.id}
                   variants={{
                     hidden: { opacity: 0, filter: 'blur(8px)', y: 20 },
-                    show: { 
-                      opacity: 1, 
+                    show: {
+                      opacity: 1,
                       filter: 'blur(0px)',
                       y: 0,
-                      transition: { 
+                      transition: {
                         duration: 0.5,
                         ease: 'easeOut'
                       }

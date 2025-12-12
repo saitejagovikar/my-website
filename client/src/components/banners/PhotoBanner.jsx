@@ -17,13 +17,13 @@ const PhotoBanner = () => {
         margin: '0 auto'
       }}>
         {!videoError ? (
-          <video 
-            autoPlay 
-            loop 
-            muted 
+          <video
+            autoPlay
+            loop
+            muted
             playsInline
             onError={handleVideoError}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-lg"
             style={{
               width: '100%',
               height: '100%',

@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function connectToDatabase() {
   if (isConnected) {
-    console.log('Using existing database connection');
     return;
   }
 
@@ -19,10 +18,8 @@ export async function connectToDatabase() {
   }
 
   try {
-    console.log('Connecting to MongoDB...');
-    
-    console.log('Attempting to connect to MongoDB with URI:', uri.replace(/:([^:]+)@/, ':***@'));
-    
+
+
     const options = {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
@@ -37,25 +34,22 @@ export async function connectToDatabase() {
       authSource: 'admin',
       family: 4 // Force IPv4
     };
-    
-    console.log('Connection options:', JSON.stringify(options, null, 2));
-    
+
+
     await mongoose.connect(uri, options);
-    
+
     isConnected = true;
-    console.log('MongoDB connected successfully');
-    
+
     // Log any connection errors after initial connection
     mongoose.connection.on('error', (err) => {
       console.error('MongoDB connection error:', err);
       isConnected = false;
     });
-    
+
     mongoose.connection.on('disconnected', () => {
-      console.log('MongoDB disconnected');
       isConnected = false;
     });
-    
+
   } catch (error) {
     console.error('MongoDB connection error:', error);
     // Exit process with failure

@@ -5,42 +5,107 @@ import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ScrollToTop from './components/common/ScrollToTop';
 import Home from './pages/Home.jsx';
-import Explore from './pages/Explore.jsx';
-import About from './pages/About.jsx';
-import Cart from './pages/Cart.jsx';
-import ProductDetail from './pages/ProductDetail.jsx';
+// Info pages
+import About from './pages/info/About.jsx';
+import Contact from './pages/info/Contact.jsx';
+import Privacy from './pages/info/Privacy.jsx';
+import Terms from './pages/info/Terms.jsx';
+import Shipping from './pages/info/Shipping.jsx';
+import Returns from './pages/info/Returns.jsx';
+// Shop pages
+import Explore from './pages/shop/Explore.jsx';
+import Luxe from './pages/shop/Luxe.jsx';
+import ProductDetail from './pages/shop/ProductDetail.jsx';
+// Checkout pages
+import Cart from './pages/checkout/Cart.jsx';
+import Checkout from './pages/checkout/Checkout.jsx';
 import Customize from './pages/Customize.jsx';
 import { allProducts } from './data/products.js';
-import LoginPage from './pages/Login.jsx';
-import ProfilePage from './pages/Profile.jsx';
-import Checkout from './pages/Checkout.jsx';
-import OrderDetail from './pages/OrderDetail.jsx';
+// Auth pages
+import LoginPage from './pages/auth/Login.jsx';
+// User pages
+import ProfilePage from './pages/user/Profile.jsx';
+import OrderDetail from './pages/user/OrderDetail.jsx';
 import AnnouncementBanner from './components/banners/AnnouncementBanner';
-import AdminPage from './pages/Admin.jsx';
-import { apiGet } from './api/client';
+// Admin pages
+import AdminPage from './pages/admin/Admin.jsx';
+import AdminOrders from './pages/admin/AdminOrders.jsx';
+import AdminAnalytics from './pages/admin/AdminAnalytics.jsx';
+import NotFound from './pages/NotFound.jsx';
+import { apiGet, apiPut } from './api/client';
+import LoadingSpinner from './components/common/LoadingSpinner';
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isPageLoading, setIsPageLoading] = useState(false);
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  // Page transition loading effect
+  useEffect(() => {
+    setIsPageLoading(true);
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 300); // Short delay for smooth transition
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  // Ref to track pending cart save operations
+  const saveCartTimeoutRef = React.useRef(null);
+  const isSavingCartRef = React.useRef(false);
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  // Load cart from backend when user is logged in
+  useEffect(() => {
+    const loadCartFromBackend = async () => {
+      if (user?.email) {
+        try {
+          // Use JWT token - no need to pass email in query
+          const backendCart = await apiGet('/api/user/cart');
+          const normalizedCart = backendCart.map(item => ({
+            id: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            size: item.size,
+            quantity: item.quantity,
+            customizations: item.customizations
+          }));
+
+          setCart(normalizedCart);
+          localStorage.setItem('cart', JSON.stringify(normalizedCart));
+        } catch (error) {
+          console.error('Failed to load cart from backend:', error);
+          // If 401, user will be auto-logged out by API client
+        }
+      }
+    };
+
+    loadCartFromBackend();
+  }, [user?.email]);
+
   // Cart functions
   const addToCart = (product) => {
     setCart(prev => {
+      // Handle both _id (from API) and id (from static data)
+      const productId = product._id || product.id;
+
       // Create a clean product object with only necessary fields
       const cleanProduct = {
-        id: product.id,
+        id: productId,
         name: product.name,
         price: product.price,
-        image: product.image,
+        // Handle both images array and single image
+        image: product.images?.[0] || product.image,
         size: product.size,
         quantity: product.quantity || 1,
         customizations: product.customizations ? {
@@ -81,6 +146,10 @@ function AppContent() {
       }
 
       localStorage.setItem('cart', JSON.stringify(updated));
+
+      // Save to backend if user is logged in (debounced)
+      saveCartToBackend();
+
       return updated;
     });
   };
@@ -96,6 +165,10 @@ function AppContent() {
         return item.id !== productId;
       });
       localStorage.setItem('cart', JSON.stringify(updated));
+
+      // Save to backend if user is logged in (debounced)
+      saveCartToBackend();
+
       return updated;
     });
   };
@@ -117,15 +190,165 @@ function AppContent() {
       });
 
       localStorage.setItem('cart', JSON.stringify(updated));
+
+      // Save to backend if user is logged in (debounced)
+      saveCartToBackend();
+
       return updated;
     });
   };
 
   // User functions
-  const handleLogin = (userData) => {
-    const userWithId = { ...userData, id: Date.now().toString() };
-    localStorage.setItem('user', JSON.stringify(userWithId));
-    setUser(userWithId);
+  const handleLogin = async (responseData) => {
+    // Check if this is a different user
+    const previousUser = user;
+    const isDifferentUser = previousUser && previousUser.email &&
+      responseData.user?.email !== previousUser.email;
+
+    // If switching users, clear the cart first
+    if (isDifferentUser) {
+      localStorage.removeItem('cart');
+      setCart([]);
+    }
+
+    // Handle new JWT response structure: { user, token }
+    let userToStore;
+
+    if (responseData.user && responseData.token) {
+      // New JWT structure from backend
+      userToStore = responseData.user;
+      // Store token separately
+      localStorage.setItem('token', responseData.token);
+      localStorage.setItem('user', JSON.stringify(responseData.user));
+    } else {
+      // Fallback for old structure (shouldn't happen after fixes)
+      userToStore = {
+        ...responseData,
+        id: responseData._id || Date.now().toString()
+      };
+      localStorage.setItem('user', JSON.stringify(userToStore));
+    }
+
+    setUser(userToStore);
+
+    // Sync cart with backend if user has email
+    if (userToStore.email) {
+      await syncCartWithBackend(userToStore.email, isDifferentUser);
+    }
+  };
+
+  // Sync local cart with backend cart
+  const syncCartWithBackend = async (userEmail, isDifferentUser = false) => {
+    try {
+      // Use JWT token - no need to pass email in query
+      const backendCart = await apiGet('/api/user/cart');
+
+      // Normalize backend cart to frontend format
+      const normalizedCart = backendCart.map(item => ({
+        id: item.productId,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        size: item.size,
+        quantity: item.quantity,
+        customizations: item.customizations
+      }));
+
+      if (isDifferentUser) {
+        // Different user - use only backend cart, don't merge
+        setCart(normalizedCart);
+        localStorage.setItem('cart', JSON.stringify(normalizedCart));
+      } else {
+        // Same user or first login - merge local cart with backend cart
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const mergedCart = [...normalizedCart];
+
+        // Add local cart items that aren't in backend cart
+        localCart.forEach(localItem => {
+          const existsInBackend = mergedCart.some(backendItem =>
+            backendItem.id === localItem.id &&
+            backendItem.size === localItem.size
+          );
+          if (!existsInBackend) {
+            mergedCart.push(localItem);
+          }
+        });
+
+        // Update local cart state with merged cart
+        setCart(mergedCart);
+        localStorage.setItem('cart', JSON.stringify(mergedCart));
+
+        // Save merged cart back to backend if we added local items
+        if (mergedCart.length > normalizedCart.length) {
+          await saveCartToBackendNow(mergedCart);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync cart:', error);
+      // Continue with local cart if sync fails
+    }
+  };
+
+  // Save cart to backend immediately (for sync operations)
+  const saveCartToBackendNow = async (cartToSave) => {
+    if (!user?.email) return;
+
+    try {
+      const backendCart = cartToSave.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        size: item.size,
+        quantity: item.quantity,
+        customizations: item.customizations
+      }));
+
+      // Use JWT token - no need to pass email in body
+      await apiPut('/api/user/cart', { cart: backendCart });
+    } catch (error) {
+      console.error('Failed to save cart to backend:', error);
+    }
+  };
+
+  // Save cart to backend when user is logged in (debounced to prevent race conditions)
+  const saveCartToBackend = async () => {
+    if (!user?.email) return;
+
+    // Clear any pending save operations
+    if (saveCartTimeoutRef.current) {
+      clearTimeout(saveCartTimeoutRef.current);
+    }
+
+    // Debounce the save operation to prevent multiple simultaneous requests
+    saveCartTimeoutRef.current = setTimeout(async () => {
+      // Prevent concurrent saves
+      if (isSavingCartRef.current) {
+        return;
+      }
+
+      isSavingCartRef.current = true;
+
+      try {
+        const backendCart = cart.map(item => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          size: item.size,
+          quantity: item.quantity,
+          customizations: item.customizations
+        }));
+
+        // Use JWT token - no need to pass email in body
+        await apiPut('/api/user/cart', { cart: backendCart });
+      } catch (error) {
+        console.error('Failed to save cart to backend:', error);
+        // Don't throw error - cart is still saved locally
+      } finally {
+        isSavingCartRef.current = false;
+      }
+    }, 500); // 500ms debounce delay
   };
 
   const handleCheckout = () => {
@@ -138,8 +361,17 @@ function AppContent() {
   };
 
   const handleLogout = () => {
+    // Clear user data
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
+
+    // Clear cart on logout
+    localStorage.removeItem('cart');
+    setCart([]);
+
+    // Navigate to home
+    navigate('/');
   };
 
   const cartItemCount = cart.reduce((total, item) => total + (item.quantity || 1), 0);
@@ -196,6 +428,17 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
+
+      {/* Page Transition Loader */}
+      {isPageLoading && (
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      )}
+
       <Routes>
         {/* Public routes with layout */}
         <Route path="/" element={
@@ -208,15 +451,39 @@ function AppContent() {
           </Layout>
         } />
 
-        <Route path="/explore" element={
-          <Layout>
-            <Explore products={allProducts} onAddToCart={addToCart} user={user} />
-          </Layout>
-        } />
-
         <Route path="/about" element={
           <Layout>
             <About />
+          </Layout>
+        } />
+
+        <Route path="/contact" element={
+          <Layout>
+            <Contact />
+          </Layout>
+        } />
+
+        <Route path="/privacy" element={
+          <Layout>
+            <Privacy />
+          </Layout>
+        } />
+
+        <Route path="/terms" element={
+          <Layout>
+            <Terms />
+          </Layout>
+        } />
+
+        <Route path="/shipping" element={
+          <Layout>
+            <Shipping />
+          </Layout>
+        } />
+
+        <Route path="/returns" element={
+          <Layout>
+            <Returns />
           </Layout>
         } />
 
@@ -268,6 +535,11 @@ function AppContent() {
         } />
 
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
+
+        {/* 404 Not Found - Catch all unmatched routes */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
@@ -376,9 +648,7 @@ function ProductDetailWrapper({ products, onAddToCart, user }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="mb-4">Loading product...</p>
-        </div>
+        <LoadingSpinner message="Loading product..." />
       </div>
     );
   }

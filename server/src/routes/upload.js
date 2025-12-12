@@ -14,7 +14,7 @@ cloudinary.config({
 
 // Set up multer memory storage
 const memoryStorage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage: memoryStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -30,18 +30,10 @@ const upload = multer({
 
 // Upload image to Cloudinary
 router.post('/image', upload.single('image'), async (req, res) => {
-  console.log('Upload request received', {
-    headers: req.headers,
-    file: req.file ? {
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size
-    } : 'No file received'
-  });
-  
+
   if (!req.file) {
     console.error('No file in request');
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
       error: 'No file uploaded or file type not allowed. Please upload an image file (JPEG, PNG, etc.)',
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -49,22 +41,16 @@ router.post('/image', upload.single('image'), async (req, res) => {
   }
 
   try {
-    console.log('Processing file for Cloudinary:', {
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size
-    });
-    
+
     // Verify Cloudinary config
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
       throw new Error('Cloudinary configuration is incomplete');
     }
-    
+
     // Convert buffer to base64
     const base64Data = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    
-    console.log('Uploading to Cloudinary...');
-    
+
+
     // Upload to Cloudinary with error handling
     const result = await cloudinary.uploader.upload(base64Data, {
       folder: 'prakritee',
@@ -82,14 +68,8 @@ router.post('/image', upload.single('image'), async (req, res) => {
       });
       throw new Error(`Cloudinary upload failed: ${cloudinaryError.message}`);
     });
-    
-    console.log('Cloudinary upload successful:', {
-      url: result.secure_url,
-      publicId: result.public_id,
-      format: result.format,
-      bytes: result.bytes
-    });
-    
+
+
     res.json({
       success: true,
       message: 'Image uploaded successfully',
@@ -98,7 +78,7 @@ router.post('/image', upload.single('image'), async (req, res) => {
       format: result.format,
       bytes: result.bytes
     });
-    
+
   } catch (error) {
     console.error('Upload error details:', {
       error: error.message,
@@ -106,8 +86,8 @@ router.post('/image', upload.single('image'), async (req, res) => {
       name: error.name,
       code: error.code
     });
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       success: false,
       error: 'Failed to upload image',
       message: error.message,

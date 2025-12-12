@@ -15,7 +15,7 @@ function Navbar({ cartCount = 0, user, onLogout }) {
       // Change background after 50px of scroll
       setIsScrolled(window.scrollY > 50);
     };
-    
+
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
@@ -62,33 +62,29 @@ function Navbar({ cartCount = 0, user, onLogout }) {
     { icon: <FiCreditCard className="mr-3" />, label: 'Payment Methods', path: '/profile?tab=cards' },
   ];
 
-  // Check if we're on a product page or other non-home page
-  const isProductPage = location.pathname.startsWith('/product') || 
-                        location.pathname.startsWith('/customize') || 
-                        location.pathname.startsWith('/luxe') || 
-                        location.pathname.startsWith('/explore') ||
-                        location.pathname.startsWith('/about') ||
-                        location.pathname.startsWith('/profile');
-  
+  // Check if we're on the home page
+  const isHomePage = location.pathname === '/';
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || isProductPage
-          ? 'bg-black/90 py-4 shadow-lg backdrop-blur-sm text-white' 
-          : 'bg-transparent py-6 text-white'
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || !isHomePage
+        ? 'bg-black/90 py-2 shadow-lg backdrop-blur-sm text-white'
+        : 'bg-transparent py-6 text-white'
+        }`}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 transition-all duration-300">
-        <div className="flex flex-col items-center">
-          <button 
-            onClick={handleLogoClick} 
-            className="text-3xl font-bold text-white leading-none transition-all duration-300 transform hover:scale-105 hover:text-red-600" 
+        <div className={`flex flex-col items-center transition-all duration-300 ${isScrolled || !isHomePage ? 'mt-2' : 'mt-6'}`}>
+          <button
+            onClick={handleLogoClick}
+            className={`font-bold text-white leading-none transition-all duration-300 transform hover:scale-105 hover:text-red-600 ${isScrolled || !isHomePage ? 'text-2xl' : 'text-3xl'
+              }`}
             style={{ fontFamily: '"Nosifer", sans-serif', fontWeight: 400 }}
           >
             SLAY
           </button>
-          <span 
-            className="text-xs text-gray-300 -mt-0.5 tracking-wider"
+          <span
+            className={`text-gray-300 tracking-wider transition-all duration-300 ${isScrolled || !isHomePage ? 'text-[10px] -mt-0' : 'text-xs -mt-0.5'
+              }`}
             style={{ fontFamily: '"Zalando Sans Expanded", sans-serif', fontWeight: 300, fontStyle: 'normal', display: 'block', letterSpacing: '0.15em' }}
           >
             A FASHION TEE BRAND
@@ -97,7 +93,7 @@ function Navbar({ cartCount = 0, user, onLogout }) {
 
         <div className="flex items-center space-x-6">
           <div className="relative" ref={profileRef}>
-            <button 
+            <button
               onClick={handleProfileClick}
               className="p-3 text-white flex items-center text-lg hover:text-gray-300 transition-colors"
             >
@@ -130,8 +126,8 @@ function Navbar({ cartCount = 0, user, onLogout }) {
             )}
           </div>
 
-          <button 
-            onClick={handleCart} 
+          <button
+            onClick={handleCart}
             className="p-3 text-white relative text-lg"
           >
             <FiShoppingCart className="h-6 w-6" />

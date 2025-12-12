@@ -4,7 +4,7 @@ import HeroBanner from '../components/banners/HeroBanner.jsx';
 import ScrollingBanner from '../components/banners/ScrollingBanner.jsx';
 import CategoryTabs from '../components/products/CategoryTabs.jsx';
 import ProductGrid from '../components/products/ProductsGrid.jsx';
-import Luxe from './Luxe.jsx';
+import Luxe from './shop/Luxe.jsx';
 
 export default function Home({
   addToCart,
@@ -21,7 +21,7 @@ export default function Home({
     <>
       {/* Hero Banner and Scrolling Banner - No Space */}
       <div className="w-full">
-        <HeroBanner />
+        <HeroBanner activeCategory={activeCategory} />
         <div className="relative -mt-1">
           <ScrollingBanner />
         </div>
