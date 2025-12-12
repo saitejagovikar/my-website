@@ -35,7 +35,7 @@ const customizableProducts = [
   {
     id: 4,
     name: 'Custom T-Shirt',
-    price: 24.99,
+    price: 499,
     category: 'clothing',
     image: '/images/black.png',
     rating: 4.5,

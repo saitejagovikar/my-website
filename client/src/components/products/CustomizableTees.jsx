@@ -1,15 +1,101 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBorder from '../effects/AnimatedBorder';
 
 const CustomizableTees = ({ customizableProducts = [] }) => {
   const navigate = useNavigate();
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [pendingProductId, setPendingProductId] = useState(null);
+
+  // Countdown timer effect
+  useEffect(() => {
+    let timer;
+    if (showCustomizeModal && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (showCustomizeModal && countdown === 0) {
+      navigate(`/customize/${pendingProductId}`);
+      setShowCustomizeModal(false);
+      setCountdown(5);
+      setPendingProductId(null);
+    }
+    return () => clearTimeout(timer);
+  }, [showCustomizeModal, countdown, navigate, pendingProductId]);
 
   if (!customizableProducts || !customizableProducts.length) return null;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Customize Warning Modal */}
+      {showCustomizeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowCustomizeModal(false);
+                setCountdown(5);
+                setPendingProductId(null);
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Icon */}
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            {/* Message */}
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-2" style={{ fontFamily: 'Marcellus SC, serif' }}>
+              Best Viewed on Desktop
+            </h2>
+            <p className="text-center text-gray-600 mb-6">
+              For the best customization experience, we recommend opening this on a desktop or laptop computer.
+            </p>
+
+            {/* Countdown */}
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white text-2xl font-bold mb-2">
+                {countdown}
+              </div>
+              <p className="text-sm text-gray-500">Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}...</p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCustomizeModal(false);
+                  setCountdown(5);
+                  setPendingProductId(null);
+                }}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  navigate(`/customize/${pendingProductId}`);
+                  setShowCustomizeModal(false);
+                  setCountdown(5);
+                  setPendingProductId(null);
+                }}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+              >
+                Continue Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8">
         <div className="relative mb-10 md:mb-12">
           <div className="absolute inset-0 flex items-center">
@@ -72,7 +158,11 @@ const CustomizableTees = ({ customizableProducts = [] }) => {
 
                     <div className="pt-2">
                       <motion.button
-                        onClick={() => navigate(`/customize/${customizableProducts[0].id}`)}
+                        onClick={() => {
+                          setPendingProductId(customizableProducts[0].id);
+                          setShowCustomizeModal(true);
+                          setCountdown(5);
+                        }}
                         className="px-6 py-3 text-sm sm:text-base font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 group shadow-md"
                         whileHover={{ scale: 1.03, boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)' }}
                         whileTap={{ scale: 0.98 }}
