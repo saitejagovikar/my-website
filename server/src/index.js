@@ -105,6 +105,11 @@ app.use('/api/public/products', (req, res, next) => {
   next();
 });
 
+// Root endpoint for Render health checks
+app.get('/', (req, res) => {
+  res.send('SLAY API is running');
+});
+
 // API Routes
 app.use('/api', apiLimiter, publicRouter);
 app.use('/api/admin', adminRouter);
